@@ -1,4 +1,4 @@
-module github.com/fingcloud/cli
+module github.com/fingcloud/fing-cli
 
 go 1.16
 

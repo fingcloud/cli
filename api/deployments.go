@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fingcloud/cli/config"
+	"github.com/fingcloud/fing-cli/internal/config"
 )
 
 type FileInfo struct {

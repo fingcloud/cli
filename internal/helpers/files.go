@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fingcloud/cli/api"
+	"github.com/fingcloud/fing-cli/api"
 	ignore "github.com/sabhiram/go-gitignore"
 )
 

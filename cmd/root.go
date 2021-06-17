@@ -3,8 +3,8 @@ package cmd
 import (
 	"strings"
 
-	"github.com/fingcloud/cli/api"
-	"github.com/fingcloud/cli/config"
+	"github.com/fingcloud/fing-cli/api"
+	"github.com/fingcloud/fing-cli/internal/config"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
@@ -42,7 +42,9 @@ func init() {
 	}
 
 	rootCmd.AddCommand(
+		NewLoginCommand(),
 		NewDeployCommand(),
+		NewAppsCommand(),
 	)
 }
 

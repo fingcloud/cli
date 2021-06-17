@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fingcloud/cli/api"
-	"github.com/fingcloud/cli/config"
+	"github.com/fingcloud/fing-cli/api"
+	"github.com/fingcloud/fing-cli/internal/config"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

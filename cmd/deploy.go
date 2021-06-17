@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 
 	"github.com/dustin/go-humanize"
-	"github.com/fingcloud/cli/api"
-	"github.com/fingcloud/cli/cli"
-	"github.com/fingcloud/cli/internal/helpers"
-	"github.com/fingcloud/cli/internal/spinner"
-	"github.com/fingcloud/cli/internal/ui"
+	"github.com/fingcloud/fing-cli/api"
+	"github.com/fingcloud/fing-cli/internal/cli"
+	"github.com/fingcloud/fing-cli/internal/helpers"
+	"github.com/fingcloud/fing-cli/internal/spinner"
+	"github.com/fingcloud/fing-cli/internal/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
