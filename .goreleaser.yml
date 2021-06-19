@@ -9,7 +9,7 @@ before:
 builds:
   
   - hooks:
-      post: /bin/sh upx dist/fing_{{ .Os }}_{{ .Arch }}/*
+      post: upx dist/fing_{{ .Os }}_{{ .Arch }}/*
     env:
       - CGO_ENABLED=0
     goos:
