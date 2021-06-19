@@ -71,7 +71,12 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 		}
 	} else {
 		buf := new(bytes.Buffer)
-		if reader, ok := body.(io.Reader); ok {
+		if body == nil {
+			req, err = http.NewRequest(method, u.String(), nil)
+			if err != nil {
+				return nil, err
+			}
+		} else if reader, ok := body.(io.Reader); ok {
 			req, err = http.NewRequest(method, u.String(), reader)
 			if err != nil {
 				return nil, err
@@ -85,17 +90,17 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 			if err != nil {
 				return nil, err
 			}
+			req.Header.Add("Content-Type", "application/json")
 		}
-
-		req.Header.Add("Content-Type", "application/json")
 	}
 
 	for k, v := range c.headers {
 		req.Header.Add(k, v)
 	}
 
-	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "fingcli")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
 
 	return req, nil
 }
@@ -111,7 +116,8 @@ type Response struct {
 }
 
 func (r *Response) Error() string {
-	return fmt.Sprintf("%v %v: %d %v", r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message)
+	return r.Message
+	// return fmt.Sprintf("%v %v: %d %v", r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message)
 }
 
 func (r *Response) IsFilesError() bool {
