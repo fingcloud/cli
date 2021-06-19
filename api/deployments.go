@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fingcloud/fing-cli/internal/config"
+	"github.com/fingcloud/cli/internal/config"
 )
 
 type FileInfo struct {
@@ -31,6 +31,28 @@ type Deployment struct {
 	CreatedAt *time.Time       `json:"created_at"`
 }
 
+type ListLogsOptions struct {
+	From int64 `json:"from"`
+}
+
+type BuildLog struct {
+	ID        int64     `json:"id"`
+	Level     string    `json:"level"`
+	Message   string    `json:"message"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type BuildLogs struct {
+	Deployment *Deployment `json:"deployment"`
+	Logs       []*BuildLog `json:"logs"`
+}
+
+type DeploymentLog struct {
+	Stream    string    `json:"stream"`
+	Message   string    `json:"message"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
 type DeploymentStatus string
 
 const (
@@ -44,15 +66,15 @@ const (
 	DeploymentStatusFailed   = "failed"
 )
 
-func (c *Client) CreateDeployment(app string, opts *CreateDeploymentOptions) (*Deployment, []*FileInfo, error) {
+func (c *Client) DeployemntCreate(app string, opts *CreateDeploymentOptions) (*Deployment, []*FileInfo, error) {
 	url := fmt.Sprintf("apps/%s/deployments", app)
 
-	v := new(Deployment)
 	req, err := c.NewRequest(http.MethodPost, url, opts)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	v := new(Deployment)
 	resp, err := c.Do(req, v)
 	if err != nil {
 		if resp != nil && resp.IsFilesError() {
@@ -62,4 +84,54 @@ func (c *Client) CreateDeployment(app string, opts *CreateDeploymentOptions) (*D
 	}
 
 	return v, nil, nil
+}
+
+func (c *Client) DeploymentListBuildLogs(app string, deploymentId int64, opts *ListLogsOptions) (*BuildLogs, error) {
+	url := fmt.Sprintf("apps/%s/deployments/%d/build-logs?from=%d", app, deploymentId, opts.From)
+
+	req, err := c.NewRequest(http.MethodGet, url, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	v := new(BuildLogs)
+	_, err = c.Do(req, v)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, err
+}
+
+func (c *Client) DeploymentListLogs(app string, deploymentId int64, opts *ListLogsOptions) ([]*DeploymentLog, error) {
+	url := fmt.Sprintf("apps/%s/deployments/%d/logs?from=%d", app, deploymentId, opts.From)
+
+	req, err := c.NewRequest(http.MethodGet, url, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	v := make([]*DeploymentLog, 0)
+	_, err = c.Do(req, v)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, err
+}
+
+func (c *Client) DeploymentCancel(app string, deploymentId int64) error {
+	url := fmt.Sprintf("apps/%s/deployments/%d/cancel", app, deploymentId)
+
+	req, err := c.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
