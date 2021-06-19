@@ -7,10 +7,7 @@ before:
 
 
 builds:
-  
-  - hooks:
-      post: upx dist/fing_{{ .Os }}_{{ .Arch }}/*
-    env:
+  - env:
       - CGO_ENABLED=0
     goos:
       - linux
