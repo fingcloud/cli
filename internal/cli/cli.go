@@ -7,11 +7,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fingcloud/fing-cli/api"
-	"github.com/fingcloud/fing-cli/internal/config"
+	"github.com/fingcloud/cli/api"
+	"github.com/fingcloud/cli/internal/config"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+)
+
+var (
+	Version   = ""
+	BuildDate = ""
+	Commit    = ""
 )
 
 const (
@@ -26,17 +32,23 @@ type FingCli struct {
 }
 
 func New(cmd *cobra.Command, args []string, token string, devMode bool) *FingCli {
+	authCfg, _ := config.ReadAuthConfig()
+	if authCfg != nil {
+		token = authCfg.Token
+	}
+
 	client := api.NewClient(token, api.WithDevMode(devMode))
 
-	config := new(config.Config)
-	if err := viper.Unmarshal(config); err != nil {
+	cfg := new(config.Config)
+	if err := viper.Unmarshal(cfg); err != nil {
 		cobra.CheckErr(err)
 	}
+
 	return &FingCli{
 		Cmd:    cmd,
 		Args:   args,
 		Client: client,
-		Config: config,
+		Config: cfg,
 	}
 }
 
