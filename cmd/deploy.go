@@ -2,16 +2,19 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"strings"
+	"syscall"
 
 	"github.com/dustin/go-humanize"
-	"github.com/fingcloud/fing-cli/api"
-	"github.com/fingcloud/fing-cli/internal/cli"
-	"github.com/fingcloud/fing-cli/internal/helpers"
-	"github.com/fingcloud/fing-cli/internal/spinner"
-	"github.com/fingcloud/fing-cli/internal/ui"
+	"github.com/fingcloud/cli/api"
+	"github.com/fingcloud/cli/internal/cli"
+	"github.com/fingcloud/cli/internal/helpers"
+	"github.com/fingcloud/cli/internal/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -42,43 +45,120 @@ func runDeploy(cli *cli.FingCli) {
 
 	printAppInfo()
 
-	spinner.Start("Getting files...")
+	fmt.Println(ui.Info("Getting files..."))
 	files, err := helpers.GetFiles(path)
 	checkError(err)
-	spinner.Stop()
 
-	spinner.Start("Creating deployment...")
-
+	retry, maxRetry := 0, 3
 DEPLOY:
-	deployment, changes, err := cli.Client.CreateDeployment(app, &api.CreateDeploymentOptions{
+	retry++
+	deployment, changes, err := cli.Client.DeployemntCreate(app, &api.CreateDeploymentOptions{
 		Files:  files,
 		Config: cli.Config,
 	})
-	spinner.Stop()
 	checkError(err)
 
 	if changes != nil {
-		deployUploadChanges(cli, app, changes)
+		deployUploadChanges(cli, path, app, changes)
+		if retry == maxRetry {
+			checkError(errors.New("can't create deployment"))
+		}
 		goto DEPLOY
 	}
 
-	fmt.Println(deployment)
+	err = readBuildLogs(cli, app, deployment.ID)
+	checkError(err)
 
+	fmt.Println(deployment)
 }
 
-func deployUploadChanges(cli *cli.FingCli, app string, files []*api.FileInfo) {
-	spinner.Start("Compressing...")
+func deployUploadChanges(cli *cli.FingCli, projectPath, app string, files []*api.FileInfo) {
+	fmt.Println(ui.Info("Getting files..."))
 	tarBuf := new(bytes.Buffer)
-	err := helpers.Compress(files, tarBuf)
-	spinner.Stop()
+	err := helpers.Compress(projectPath, files, tarBuf)
 	checkError(err)
 
-	fmt.Printf("📦 Upload %d files (size %s)\n", len(files), humanize.Bytes(uint64(tarBuf.Len())))
+	fmt.Println(ui.Info(fmt.Sprintf("Upload size %s, (%d files)", humanize.Bytes(uint64(tarBuf.Len())), len(files))))
+	fmt.Println(ui.Info("Uploading..."))
 
-	spinner.Start("Uploading...")
 	err = cli.Client.AppsUploadFiles(app, tarBuf)
 	checkError(err)
-	spinner.Stop()
+}
+
+func readBuildLogs(cli *cli.FingCli, app string, deploymentId int64) error {
+	fmt.Println(ui.Info("Building..."))
+
+	interrupt := make(chan os.Signal)
+	built := make(chan bool)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	var canceled bool
+	go func() {
+		defer func() {
+			close(interrupt)
+			close(built)
+		}()
+
+		for {
+			select {
+			case <-interrupt:
+				err := cli.Client.DeploymentCancel(app, deploymentId)
+				if err != nil {
+					checkError(err)
+				}
+				fmt.Println("")
+				return
+			case <-built:
+				return
+			}
+		}
+	}()
+
+	var from int64
+	var starting bool
+	for {
+		select {
+		case <-interrupt:
+			err := cli.Client.DeploymentCancel(app, deploymentId)
+			if err != nil {
+				checkError(err)
+			}
+		}
+		buildLogs, err := cli.Client.DeploymentListBuildLogs(app, deploymentId, &api.ListLogsOptions{From: from})
+		if err != nil {
+			return err
+		}
+
+		for _, log := range buildLogs.Logs {
+			fmt.Println(ui.Gray(log.Message))
+			if strings.HasPrefix(log.Message, "Successfully tagged") {
+				fmt.Println(ui.Info("Build completed"))
+				built <- true
+			}
+		}
+
+		if buildLogs.Deployment.Status == api.DeploymentStatusFailed {
+			return errors.New("Build failed")
+		}
+
+		if buildLogs.Deployment.Status == api.DeploymentStatusCancel || canceled {
+			return errors.New("Build canceled")
+		}
+
+		if buildLogs.Deployment.Status == api.DeploymentStatusStarting && !starting {
+			fmt.Println(ui.Info("Starting..."))
+			starting = true
+		}
+
+		if buildLogs.Deployment.Status == api.DeploymentStatusRunning {
+			fmt.Println(ui.Info("Deployment created :)"))
+			return nil
+		}
+
+		if len(buildLogs.Logs) > 0 {
+			from = buildLogs.Logs[len(buildLogs.Logs)-1].ID
+		}
+	}
 }
 
 func printAppInfo() {
@@ -87,11 +167,4 @@ func printAppInfo() {
 	fmt.Printf("%s %s\n", ui.Gray("app:"), ui.Green(viper.GetString("app")))
 	fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(viper.GetString("platform")))
 	fmt.Printf("%s %s\n", ui.Gray("port:"), ui.Green(viper.GetString("port")))
-}
-
-func checkError(err error) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, ui.Alert(err.Error()))
-		os.Exit(1)
-	}
 }
