@@ -9,24 +9,29 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fingcloud/fing-cli/api"
+	"github.com/fingcloud/cli/api"
 	ignore "github.com/sabhiram/go-gitignore"
 )
 
-func GetFiles(path string) ([]*api.FileInfo, error) {
-	patterns := loadIgnorefiles(path)
+func GetFiles(projectPath string) ([]*api.FileInfo, error) {
+	patterns := loadIgnorefiles(projectPath)
 	patterns = append(patterns, defaultIngnores...)
 
 	ignore := ignore.CompileIgnoreLines(patterns...)
 
 	files := make([]*api.FileInfo, 0)
 
-	err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+	err := filepath.Walk(projectPath, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
 		if ignore.MatchesPath(path) {
+			return nil
+		}
+
+		filePath, _ := filepath.Rel(projectPath, path)
+		if filePath == "" || filePath == "." {
 			return nil
 		}
 
@@ -39,7 +44,7 @@ func GetFiles(path string) ([]*api.FileInfo, error) {
 		}
 
 		files = append(files, &api.FileInfo{
-			Path:     path,
+			Path:     filePath,
 			Size:     info.Size(),
 			Dir:      info.IsDir(),
 			Checksum: checksum,
@@ -64,15 +69,17 @@ func isExecutable(mode fs.FileMode) bool {
 	return mode&0111 != 0
 }
 
-func Compress(files []*api.FileInfo, writer io.Writer) error {
+func Compress(projectPath string, files []*api.FileInfo, writer io.Writer) error {
 	gzw := gzip.NewWriter(writer)
 	tw := tar.NewWriter(gzw)
 
 	for _, file := range files {
-		info, err := os.Stat(file.Path)
+		path := filepath.Join(projectPath, file.Path)
+		info, err := os.Stat(path)
 		if err != nil {
 			return err
 		}
+
 		header, err := tar.FileInfoHeader(info, file.Path)
 		if err != nil {
 			return err
@@ -81,13 +88,13 @@ func Compress(files []*api.FileInfo, writer io.Writer) error {
 		// must provide real name
 		// (see https://golang.org/src/archive/tar/common.go?#L626)
 		header.Name = filepath.ToSlash(file.Path)
-
+		fmt.Println(header.Name)
 		if err := tw.WriteHeader(header); err != nil {
 			return err
 		}
 
 		if !info.IsDir() {
-			f, err := os.Open(file.Path)
+			f, err := os.Open(path)
 			if err != nil {
 				return err
 			}
