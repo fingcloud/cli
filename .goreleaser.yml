@@ -9,7 +9,7 @@ before:
 builds:
   
   - hooks:
-      post: /bin/sh scripts/compress.sh
+      post: /bin/sh upx fing_{{ .Version }}_{{ .Os }}_{{ .Arch }}/*
     env:
       - CGO_ENABLED=0
     goos:
