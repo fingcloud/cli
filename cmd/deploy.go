@@ -14,6 +14,7 @@ import (
 	"github.com/fingcloud/cli/api"
 	"github.com/fingcloud/cli/internal/cli"
 	"github.com/fingcloud/cli/internal/helpers"
+	"github.com/fingcloud/cli/internal/retry"
 	"github.com/fingcloud/cli/internal/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -49,40 +50,46 @@ func runDeploy(cli *cli.FingCli) {
 	files, err := helpers.GetFiles(path)
 	checkError(err)
 
-	retry, maxRetry := 0, 3
-DEPLOY:
-	retry++
-	deployment, changes, err := cli.Client.DeployemntCreate(app, &api.CreateDeploymentOptions{
-		Files:  files,
-		Config: cli.Config,
-	})
-	checkError(err)
-
-	if changes != nil {
-		deployUploadChanges(cli, path, app, changes)
-		if retry == maxRetry {
-			checkError(errors.New("can't create deployment"))
+	var d *api.Deployment
+	err = retry.Retry(func() error {
+		deployment, changes, err := cli.Client.DeployemntCreate(app, &api.CreateDeploymentOptions{
+			Files:  files,
+			Config: cli.Config,
+		})
+		if err != nil {
+			return err
 		}
-		goto DEPLOY
-	}
 
-	err = readBuildLogs(cli, app, deployment.ID)
+		d = deployment
+
+		if changes != nil {
+			err = deployUploadChanges(cli, path, app, changes)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}, 3)
 	checkError(err)
 
-	fmt.Println(deployment)
+	err = readBuildLogs(cli, app, d.ID)
+	checkError(err)
+
 }
 
-func deployUploadChanges(cli *cli.FingCli, projectPath, app string, files []*api.FileInfo) {
+func deployUploadChanges(cli *cli.FingCli, projectPath, app string, files []*api.FileInfo) error {
 	fmt.Println(ui.Info("Getting files..."))
 	tarBuf := new(bytes.Buffer)
 	err := helpers.Compress(projectPath, files, tarBuf)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	fmt.Println(ui.Info(fmt.Sprintf("Upload size %s, (%d files)", humanize.Bytes(uint64(tarBuf.Len())), len(files))))
 	fmt.Println(ui.Info("Uploading..."))
 
-	err = cli.Client.AppsUploadFiles(app, tarBuf)
-	checkError(err)
+	return cli.Client.AppsUploadFiles(app, tarBuf)
 }
 
 func readBuildLogs(cli *cli.FingCli, app string, deploymentId int64) error {
