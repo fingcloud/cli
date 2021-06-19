@@ -5,8 +5,12 @@ before:
     - go mod tidy
     - go generate ./...
 
+
 builds:
-  - env:
+  
+  - hooks:
+      post: /bin/sh scripts/compress.sh
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
