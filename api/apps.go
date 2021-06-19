@@ -45,12 +45,12 @@ type AppResource struct {
 func (c *Client) AppsList(opts *ListAppsOptions) ([]*App, error) {
 	url := fmt.Sprintf("apps")
 
-	v := make([]*App, 0)
 	req, err := c.NewRequest(http.MethodGet, url, opts)
 	if err != nil {
 		return nil, err
 	}
 
+	v := make([]*App, 0)
 	_, err = c.Do(req, v)
 	if err != nil {
 		return nil, err
@@ -62,12 +62,12 @@ func (c *Client) AppsList(opts *ListAppsOptions) ([]*App, error) {
 func (c *Client) AppsCreate(opts *CreateAppOptions) (*App, error) {
 	url := fmt.Sprintf("apps")
 
-	v := new(App)
 	req, err := c.NewRequest(http.MethodPost, url, opts)
 	if err != nil {
 		return nil, err
 	}
 
+	v := new(App)
 	_, err = c.Do(req, v)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,6 @@ func (c *Client) AppsUploadFiles(app string, tarfile io.Reader) error {
 	}
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	fmt.Println(req.Header)
 
 	_, err = c.Do(req, nil)
 	if err != nil {
