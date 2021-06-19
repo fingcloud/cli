@@ -1,0 +1,26 @@
+{
+  "name": "@fing/cli",
+  "version": "0.0.0",
+  "description": "Develop and deploy code with zero configuration",
+  "main": "index.js",
+  "author": "Fing",
+  "license": "MIT",
+  "homepage": "https://github.com/fingcloud/cli/blob/master/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fingcloud/cli.git"
+  },
+  "scripts": {
+    "postinstall": "go-npm install",
+    "preuninstall": "go-npm uninstall"
+  },
+  "goBinary": {
+    "name": "fing",
+    "path": "./bin",
+    "url": "https://github.com/fingcloud/cli/releases/download/v{{version}}/fing_{{version}}_{{platform}}_{{arch}}.tar.gz"
+  },
+  "files": [],
+  "dependencies": {
+    "go-npm": "^0.1.9"
+  }
+}
