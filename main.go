@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/fingcloud/fing-cli/cmd"
+import "github.com/fingcloud/cli/cmd"
 
 func main() {
 	cmd.Execute()
