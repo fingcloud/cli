@@ -23,3 +23,11 @@ func PromptPassword(v interface{}) error {
 
 	return survey.AskOne(p, v)
 }
+
+func PromptYesNo(message string, v interface{}) error {
+	p := &survey.Confirm{
+		Message: message,
+	}
+
+	return survey.AskOne(p, v)
+}
