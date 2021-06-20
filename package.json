@@ -1,6 +1,6 @@
 {
   "name": "@fingcloud/cli",
-  "version": "v0.1.2",
+  "version": "v0.1.3",
   "description": "Develop and deploy code with zero configuration",
   "main": "index.js",
   "author": "Fing",
@@ -17,7 +17,7 @@
   "goBinary": {
     "name": "fing",
     "path": "./bin",
-    "url": "https://github.com/fingcloud/cli/releases/download/v{{version}}/fing_{{version}}_{{platform}}_{{arch}}.tar.gz"
+    "url": "https://github.com/fingcloud/cli/releases/download/v{{version}}/fing-{{version}}-{{platform}}-{{arch}}.tar.gz"
   },
   "files": [],
   "dependencies": {
