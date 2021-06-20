@@ -48,7 +48,7 @@ func runLogin(cli *cli.FingCli, opts *loginOptions) {
 
 	auth, err := cli.Client.AccountLogin(&api.AccountLoginOptions{
 		Email:    opts.user,
-		Passowrd: opts.password,
+		Password: opts.password,
 	})
 	checkError(err)
 
