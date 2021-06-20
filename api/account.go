@@ -7,13 +7,13 @@ import (
 
 type AccountLoginOptions struct {
 	Email    string `json:"email"`
-	Passowrd string `json:"password"`
+	Password string `json:"password"`
 }
 
 type AccountRegisterOptions struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
-	Passowrd string `json:"password"`
+	Password string `json:"password"`
 	Phone    string `json:"phone"`
 }
 
