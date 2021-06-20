@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	Version   = ""
-	BuildDate = ""
-	Commit    = ""
+	Version   = "dev"
+	BuildDate = "now"
+	Commit    = "commit"
 )
 
 const (
