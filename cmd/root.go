@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fingcloud/cli/api"
 	"github.com/fingcloud/cli/internal/config"
 	"github.com/fingcloud/cli/internal/ui"
 	"github.com/spf13/cobra"
@@ -38,11 +37,6 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&devMode, "dev", false, "development mode")
 
 	cobra.OnInitialize(initConfig)
-
-	opts := make([]api.Option, 0)
-	if devMode {
-		opts = append(opts, api.WithDevMode(true))
-	}
 
 	rootCmd.AddCommand(
 		NewLoginCommand(),
