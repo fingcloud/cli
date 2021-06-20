@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	App      string `mapstructure:"app" json:"app"`
-	Port     string `mapstructure:"port" json:"port"`
+	Port     int    `mapstructure:"port" json:"port"`
 	Platform string `mapstructure:"platform" json:"platform"`
 }
 
