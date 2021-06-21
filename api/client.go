@@ -120,7 +120,7 @@ func (r *Response) Error() string {
 	// return fmt.Sprintf("%v %v: %d %v", r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message)
 }
 
-func (r *Response) IsFilesError() bool {
+func (r *Response) IsUploadChangesErr() bool {
 	return r.StatusCode == 404 && r.Message == "upload changed files"
 }
 

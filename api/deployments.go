@@ -77,7 +77,7 @@ func (c *Client) DeployemntCreate(app string, opts *CreateDeploymentOptions) (*D
 	v := new(Deployment)
 	resp, err := c.Do(req, v)
 	if err != nil {
-		if resp != nil && resp.IsFilesError() {
+		if resp != nil && resp.IsUploadChangesErr() {
 			return nil, resp.Files, nil
 		}
 		return nil, nil, err
