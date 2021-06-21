@@ -16,7 +16,6 @@ import (
 	"github.com/fingcloud/cli/internal/cli"
 	"github.com/fingcloud/cli/internal/helpers"
 	"github.com/fingcloud/cli/internal/ui"
-	pb "github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thoas/go-funk"
@@ -98,24 +97,13 @@ func deployUploadChanges(cli *cli.FingCli, projectPath, app string, files []*api
 	if err != nil {
 		return err
 	}
+	fmt.Println(ui.Info("Uploading..."))
 
-	bar := pb.NewOptions64(
-		int64(tarBuf.Len()),
-		pb.OptionClearOnFinish(),
-		pb.OptionSetDescription("Uploading"),
-		pb.OptionSetTheme(pb.Theme{
-			Saucer:        "[green]=[reset]",
-			SaucerHead:    "[green]>[reset]",
-			SaucerPadding: " ",
-			BarStart:      "[",
-			BarEnd:        "]",
-		}),
-	)
+	bar := ui.NewProgress(0)
 	updateProgress := func(n int64, max int64) {
 		bar.ChangeMax64(max)
 		bar.Set64(n)
 	}
-	defer bar.Clear()
 
 	return cli.Client.AppsUploadFiles(app, tarBuf, updateProgress)
 }
