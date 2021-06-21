@@ -97,6 +97,7 @@ func deployUploadChanges(cli *cli.FingCli, projectPath, app string, files []*api
 	if err != nil {
 		return err
 	}
+
 	fmt.Println(ui.Info("Uploading..."))
 
 	bar := ui.NewProgress(0)
@@ -111,9 +112,10 @@ func deployUploadChanges(cli *cli.FingCli, projectPath, app string, files []*api
 func readBuildLogs(cli *cli.FingCli, app string, deploymentId int64) error {
 	fmt.Println(ui.Info("Building..."))
 
-	interruptCh := make(chan os.Signal)
+	interruptCh := make(chan os.Signal, 1)
 	builtCh := make(chan bool, 1)
 	ticker := time.NewTicker(100 * time.Millisecond)
+
 	signal.Notify(interruptCh, os.Interrupt, syscall.SIGTERM)
 
 	defer func() {
@@ -129,6 +131,7 @@ func readBuildLogs(cli *cli.FingCli, app string, deploymentId int64) error {
 		case <-builtCh:
 			return nil
 		case <-interruptCh:
+			fmt.Println(ui.Warning("Build canceled"))
 			return cli.Client.DeploymentCancel(app, deploymentId)
 		case <-ticker.C:
 			buildLogs, err := cli.Client.DeploymentListBuildLogs(app, deploymentId, &api.ListLogsOptions{From: from})
