@@ -88,7 +88,6 @@ func Compress(projectPath string, files []*api.FileInfo, writer io.Writer) error
 		// must provide real name
 		// (see https://golang.org/src/archive/tar/common.go?#L626)
 		header.Name = filepath.ToSlash(file.Path)
-		fmt.Println(header.Name)
 		if err := tw.WriteHeader(header); err != nil {
 			return err
 		}
