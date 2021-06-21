@@ -19,6 +19,7 @@ import (
 	pb "github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thoas/go-funk"
 )
 
 func NewDeployCommand() *cobra.Command {
@@ -44,6 +45,16 @@ func NewDeployCommand() *cobra.Command {
 func runDeploy(cli *cli.FingCli) {
 	app := viper.GetString("app")
 	path := viper.GetString("path")
+
+	if app == "" {
+		apps, err := cli.Client.AppsList(&api.ListAppsOptions{})
+		checkError(err)
+
+		appOptions := funk.Map(apps, func(app *api.App) string { return app.Name }).([]string)
+
+		err = ui.PromptSelect("Choose your app", appOptions, &app)
+		checkError(err)
+	}
 
 	printAppInfo()
 
