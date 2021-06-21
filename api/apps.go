@@ -51,7 +51,7 @@ func (c *Client) AppsList(opts *ListAppsOptions) ([]*App, error) {
 	}
 
 	v := make([]*App, 0)
-	_, err = c.Do(req, v)
+	_, err = c.Do(req, &v)
 	if err != nil {
 		return nil, err
 	}
