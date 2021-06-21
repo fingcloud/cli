@@ -42,6 +42,16 @@ type AppResource struct {
 	Storage float32 `json:"storage"`
 }
 
+type AppLog struct {
+	Stream    string `json:"stream"`
+	Message   string `json:"message"`
+	Timestamp int64  `json:"timestamp"`
+}
+
+type AppLogsOptions struct {
+	Since int64 `json:"since"`
+}
+
 func (c *Client) AppsList(opts *ListAppsOptions) ([]*App, error) {
 	url := fmt.Sprintf("apps")
 
@@ -129,4 +139,21 @@ func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter Progres
 	}
 
 	return err
+}
+
+func (c *Client) AppLogs(app string, opts *AppLogsOptions) ([]*AppLog, error) {
+	url := fmt.Sprintf("apps/%s/logs?since=%d", app, opts.Since)
+
+	req, err := c.NewRequest(http.MethodGet, url, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	v := make([]*AppLog, 0)
+	_, err = c.Do(req, &v)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, err
 }

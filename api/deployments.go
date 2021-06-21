@@ -31,7 +31,7 @@ type Deployment struct {
 	CreatedAt *time.Time       `json:"created_at"`
 }
 
-type ListLogsOptions struct {
+type LogsOptions struct {
 	From int64 `json:"from"`
 }
 
@@ -45,12 +45,6 @@ type BuildLog struct {
 type BuildLogs struct {
 	Deployment *Deployment `json:"deployment"`
 	Logs       []*BuildLog `json:"logs"`
-}
-
-type DeploymentLog struct {
-	Stream    string    `json:"stream"`
-	Message   string    `json:"message"`
-	Timestamp time.Time `json:"timestamp"`
 }
 
 type DeploymentStatus string
@@ -86,7 +80,7 @@ func (c *Client) DeployemntCreate(app string, opts *CreateDeploymentOptions) (*D
 	return v, nil, nil
 }
 
-func (c *Client) DeploymentListBuildLogs(app string, deploymentId int64, opts *ListLogsOptions) (*BuildLogs, error) {
+func (c *Client) DeploymentBuildLogs(app string, deploymentId int64, opts *LogsOptions) (*BuildLogs, error) {
 	url := fmt.Sprintf("apps/%s/deployments/%d/build-logs?from=%d", app, deploymentId, opts.From)
 
 	req, err := c.NewRequest(http.MethodGet, url, opts)
@@ -95,23 +89,6 @@ func (c *Client) DeploymentListBuildLogs(app string, deploymentId int64, opts *L
 	}
 
 	v := new(BuildLogs)
-	_, err = c.Do(req, v)
-	if err != nil {
-		return nil, err
-	}
-
-	return v, err
-}
-
-func (c *Client) DeploymentListLogs(app string, deploymentId int64, opts *ListLogsOptions) ([]*DeploymentLog, error) {
-	url := fmt.Sprintf("apps/%s/deployments/%d/logs?from=%d", app, deploymentId, opts.From)
-
-	req, err := c.NewRequest(http.MethodGet, url, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	v := make([]*DeploymentLog, 0)
 	_, err = c.Do(req, v)
 	if err != nil {
 		return nil, err

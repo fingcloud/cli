@@ -42,6 +42,7 @@ func init() {
 		NewLoginCommand(),
 		NewDeployCommand(),
 		NewAppsCommand(),
+		NewLogsCommand(),
 	)
 }
 

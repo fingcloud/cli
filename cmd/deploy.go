@@ -32,10 +32,10 @@ func NewDeployCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("app", "a", "", "your app name")
+	cmd.Flags().StringP("app", "a", "", "app name")
 	viper.BindPFlag("app", cmd.Flags().Lookup("app"))
 
-	cmd.Flags().String("path", ".", "path to your app")
+	cmd.Flags().String("path", ".", "path to the app")
 	viper.BindPFlag("path", cmd.Flags().Lookup("path"))
 
 	return cmd
@@ -134,7 +134,7 @@ func readBuildLogs(cli *cli.FingCli, app string, deploymentId int64) error {
 			fmt.Println(ui.Warning("Build canceled"))
 			return cli.Client.DeploymentCancel(app, deploymentId)
 		case <-ticker.C:
-			buildLogs, err := cli.Client.DeploymentListBuildLogs(app, deploymentId, &api.ListLogsOptions{From: from})
+			buildLogs, err := cli.Client.DeploymentBuildLogs(app, deploymentId, &api.LogsOptions{From: from})
 			if err != nil {
 				return err
 			}
