@@ -31,3 +31,12 @@ func PromptYesNo(message string, v interface{}) error {
 
 	return survey.AskOne(p, v)
 }
+
+func PromptSelect(message string, options []string, v interface{}) error {
+	p := &survey.Select{
+		Message: message,
+		Options: options,
+	}
+
+	return survey.AskOne(p, v)
+}
