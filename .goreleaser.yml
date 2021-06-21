@@ -52,10 +52,8 @@ brews:
 dockers:
   - goos: linux
     goarch: amd64
-    skip_push: true
     image_templates:
     - "fingcloud/cli:latest"
-    - "fingcloud/cli:{{ .Major }}-latest"
     - "fingcloud/cli:{{ .Version }}"
 
 release:
