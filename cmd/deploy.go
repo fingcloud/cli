@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thoas/go-funk"
+	"go.uber.org/atomic"
 )
 
 func NewDeployCommand() *cobra.Command {
@@ -88,6 +89,10 @@ func runDeploy(cli *cli.FingCli) {
 
 	err = readBuildLogs(cli, app, deployment.ID)
 	checkError(err)
+
+	fmt.Println(ui.Info("Starting..."))
+
+	runLogs(cli, app, 1*time.Millisecond, false, true)
 }
 
 func deployUploadChanges(cli *cli.FingCli, projectPath, app string, files []*api.FileInfo) error {
@@ -113,67 +118,79 @@ func readBuildLogs(cli *cli.FingCli, app string, deploymentId int64) error {
 	fmt.Println(ui.Info("Building..."))
 
 	interruptCh := make(chan os.Signal, 1)
-	builtCh := make(chan bool, 1)
-	ticker := time.NewTicker(100 * time.Millisecond)
+	stopCh := make(chan bool, 1)
 
 	signal.Notify(interruptCh, os.Interrupt, syscall.SIGTERM)
 
-	defer func() {
-		close(interruptCh)
-		close(builtCh)
-		ticker.Stop()
+	canceled := atomic.NewBool(false)
+
+	go func() {
+		defer func() {
+			close(interruptCh)
+			close(stopCh)
+		}()
+
+		for {
+			select {
+			case <-stopCh:
+				return
+			case <-interruptCh:
+				signal.Reset(os.Interrupt, syscall.SIGTERM)
+				fmt.Println(ui.Warning("Cancelling..."))
+				canceled.Store(true)
+				cli.Client.DeploymentCancel(app, deploymentId)
+				return
+			}
+		}
 	}()
 
 	var from int64
 	var starting bool
 	for {
-		select {
-		case <-builtCh:
-			return nil
-		case <-interruptCh:
-			fmt.Println(ui.Warning("Build canceled"))
-			return cli.Client.DeploymentCancel(app, deploymentId)
-		case <-ticker.C:
-			buildLogs, err := cli.Client.DeploymentBuildLogs(app, deploymentId, &api.LogsOptions{From: from})
-			if err != nil {
-				return err
-			}
+		buildLogs, err := cli.Client.DeploymentBuildLogs(app, deploymentId, &api.LogsOptions{From: from})
+		if err != nil {
+			return err
+		}
 
-			go func() {
-				for _, log := range buildLogs.Logs {
-					if log.Message == "" {
-						continue
-					}
-					fmt.Println(ui.Gray(log.Message))
-					if strings.HasPrefix(log.Message, "Successfully tagged") {
-						fmt.Println(ui.Info("Build completed"))
-						builtCh <- true
-					}
+		if !canceled.Load() {
+			for _, log := range buildLogs.Logs {
+				if canceled.Load() {
+					break
 				}
-			}()
-
-			if buildLogs.Deployment.Status == api.DeploymentStatusFailed {
-				return errors.New("Build failed")
-			}
-
-			if buildLogs.Deployment.Status == api.DeploymentStatusCancel {
-				return errors.New("Build canceled")
-			}
-
-			if buildLogs.Deployment.Status == api.DeploymentStatusStarting && !starting {
-				fmt.Println(ui.Info("Starting..."))
-				starting = true
-			}
-
-			if buildLogs.Deployment.Status == api.DeploymentStatusRunning {
-				fmt.Println(ui.Info("Deployment created :)"))
-				return nil
-			}
-
-			if len(buildLogs.Logs) > 0 {
-				from = buildLogs.Logs[len(buildLogs.Logs)-1].ID
+				if log.Message == "" {
+					continue
+				}
+				fmt.Println(ui.Gray(log.Message))
+				if strings.HasPrefix(log.Message, "Successfully tagged") {
+					fmt.Println(ui.Info("Build completed"))
+					stopCh <- true
+				}
 			}
 		}
+
+		if buildLogs.Deployment.Status == api.DeploymentStatusFailed {
+			return errors.New("Build failed")
+		}
+
+		if buildLogs.Deployment.Status == api.DeploymentStatusCancel {
+			return errors.New("Build canceled")
+		}
+
+		if buildLogs.Deployment.Status == api.DeploymentStatusStarting && !starting {
+			fmt.Println(ui.Info("Starting..."))
+			starting = true
+		}
+
+		if buildLogs.Deployment.Status == api.DeploymentStatusRunning {
+			fmt.Println(ui.Info("Deployment created :)"))
+			return nil
+		}
+
+		if len(buildLogs.Logs) > 0 {
+			from = buildLogs.Logs[len(buildLogs.Logs)-1].ID
+		}
+
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
