@@ -48,6 +48,12 @@ type AppLog struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
+type AppConfig struct {
+	App      string `mapstructure:"app" json:"app"`
+	Port     int    `mapstructure:"port" json:"port"`
+	Platform string `mapstructure:"platform" json:"platform"`
+}
+
 type AppLogsOptions struct {
 	Since int64 `json:"since"`
 }

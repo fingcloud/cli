@@ -5,8 +5,6 @@ import (
 	"io/fs"
 	"net/http"
 	"time"
-
-	"github.com/fingcloud/cli/internal/config"
 )
 
 type FileInfo struct {
@@ -18,8 +16,8 @@ type FileInfo struct {
 }
 
 type CreateDeploymentOptions struct {
-	Files  []*FileInfo    `json:"files"`
-	Config *config.Config `json:"config"`
+	Files  []*FileInfo `json:"files"`
+	Config *AppConfig  `json:"config"`
 }
 
 type Deployment struct {
@@ -28,6 +26,7 @@ type Deployment struct {
 	Image     string           `json:"image"`
 	Port      int              `json:"port"`
 	Status    DeploymentStatus `json:"status"`
+	URL       string           `json:"url"`
 	CreatedAt *time.Time       `json:"created_at"`
 }
 

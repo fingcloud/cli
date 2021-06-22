@@ -1,4 +1,4 @@
-package helpers
+package fileutils
 
 import (
 	"archive/tar"
@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fingcloud/cli/api"
+	"github.com/fingcloud/cli/pkg/api"
 	ignore "github.com/sabhiram/go-gitignore"
 )
 
