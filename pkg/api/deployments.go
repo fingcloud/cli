@@ -26,6 +26,7 @@ type Deployment struct {
 	Image     string           `json:"image"`
 	Port      int              `json:"port"`
 	Status    DeploymentStatus `json:"status"`
+	URL       string           `json:"url"`
 	CreatedAt *time.Time       `json:"created_at"`
 }
 

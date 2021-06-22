@@ -92,8 +92,8 @@ func (o *DeployOptions) Init(ctx *cli.Context, args []string) error {
 
 	o.logs = &logs.LogsOptions{
 		App:    o.config.App,
-		Since:  time.Millisecond,
-		Follow: !o.Dispatch,
+		Since:  time.Second,
+		Follow: true,
 	}
 
 	return nil
@@ -156,9 +156,11 @@ func (o *DeployOptions) Run(ctx *cli.Context) error {
 		return err
 	}
 
-	fmt.Println(ui.Info("Starting..."))
+	if !o.Dispatch {
+		return o.logs.Run(ctx)
+	}
 
-	return o.logs.Run(ctx)
+	return nil
 }
 
 func uploadChanges(ctx *cli.Context, projectPath, app string, files []*api.FileInfo) error {
@@ -248,6 +250,11 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusRunning {
+			fmt.Println(ui.Info("App Started successfuly"))
+			fmt.Println()
+			fmt.Println(fmt.Sprintf("\topen the following url in your browser:"))
+			fmt.Println(fmt.Sprintf("\t%s", ui.Green(buildLogs.Deployment.URL)))
+			fmt.Println()
 			return nil
 		}
 
@@ -260,8 +267,8 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 }
 
 func (o *DeployOptions) printAppInfo() {
-	fmt.Printf("%s %s\n", ui.Gray("path:"), ui.Green(&o.Path))
-	fmt.Printf("%s %s\n", ui.Gray("app:"), ui.Green(&o.config.App))
-	fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(&o.config.Platform))
-	fmt.Printf("%s %s\n", ui.Gray("port:"), ui.Green(&o.config.Port))
+	fmt.Printf("%s %s\n", ui.Gray("path:"), ui.Green(o.Path))
+	fmt.Printf("%s %s\n", ui.Gray("app:"), ui.Green(o.config.App))
+	fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(o.config.Platform))
+	fmt.Printf("%s %d\n", ui.Gray("port:"), ui.Green(o.config.Port))
 }
