@@ -268,7 +268,6 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 }
 
 func (o *DeployOptions) printAppInfo() {
-	fmt.Printf("%s %s\n", ui.Gray("path:"), ui.Green(o.Path))
 	fmt.Printf("%s %s\n", ui.Gray("app:"), ui.Green(o.config.App))
 	fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(o.config.Platform))
 	fmt.Printf("%s %d\n", ui.Gray("port:"), ui.Green(o.config.Port))
