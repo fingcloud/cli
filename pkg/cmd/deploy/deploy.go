@@ -195,6 +195,7 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 
 	go func() {
 		defer func() {
+			signal.Stop(interruptCh)
 			close(interruptCh)
 			close(stopCh)
 		}()
@@ -204,7 +205,6 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 			case <-stopCh:
 				return
 			case <-interruptCh:
-				signal.Reset(os.Interrupt, syscall.SIGTERM)
 				fmt.Println(ui.Warning("Cancelling..."))
 				canceled.Store(true)
 				ctx.Client.DeploymentCancel(app, deploymentId)
