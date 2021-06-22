@@ -39,9 +39,10 @@ func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
 	o := NewOptions()
 
 	cmd := &cobra.Command{
-		Use:   "deploy",
-		Short: "deploy your application",
-		Long:  "deploy your application",
+		Use:     "deploy",
+		Short:   "deploy your application",
+		Long:    "deploy your application",
+		Aliases: []string{"up"},
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
 
