@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"time"
-
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/config"
 	"github.com/spf13/pflag"
@@ -10,7 +8,7 @@ import (
 
 var (
 	Version   = "dev"
-	BuildDate = time.Now().String()
+	BuildDate = "now"
 	Commit    = "commit"
 )
 
