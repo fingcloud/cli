@@ -8,12 +8,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 )
 
-type Config struct {
-	App      string `mapstructure:"app" json:"app"`
-	Port     int    `mapstructure:"port" json:"port"`
-	Platform string `mapstructure:"platform" json:"platform"`
-}
-
 type AuthConfig struct {
 	Token string `json:"token"`
 	Email string `json:"email"`

@@ -1,4 +1,4 @@
-package helpers
+package fileutils
 
 import (
 	"crypto/sha256"

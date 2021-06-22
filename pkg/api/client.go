@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	baseUrl    = "https://api.fing.ir/v1/"
-	devBaseUrl = "http://localhost:3000/v1/"
+	baseUrl = "https://api.fing.ir/v1/"
 )
 
 type Client struct {
