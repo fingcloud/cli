@@ -6,6 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.2.12
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/briandowns/spinner v1.15.0
+	github.com/dustin/go-humanize v1.0.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/go-homedir v1.1.0

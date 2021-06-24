@@ -18,15 +18,19 @@ func Heading(v string) string {
 }
 
 func Alert(v string) string {
-	return color.Sprintf("%s %s", color.Red("==>"), color.Bold(v))
+	return color.Sprintf("\n%s %s", color.Red("==>"), color.Bold(v))
 }
 
 func Warning(v string) string {
-	return color.Sprintf("%s %s", color.Yellow("==>"), color.Bold(v))
+	return color.Sprintf("\n%s %s", color.Yellow("==>"), color.Bold(v))
 }
 
 func Info(v string) string {
-	return color.Sprintf("%s %s", color.Blue("==>"), color.Bold(v))
+	return color.Sprintf("\n%s %s", color.Blue("==>"), color.Bold(v))
+}
+
+func Details(v string) string {
+	return color.Sprintf("%s", color.White(v))
 }
 
 func KeyValue(key string, value interface{}) string {

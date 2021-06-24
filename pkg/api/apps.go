@@ -92,23 +92,20 @@ func (c *Client) AppsCreate(opts *CreateAppOptions) (*App, error) {
 	return v, err
 }
 
-type ProgressReporterFunc func(int64, int64)
-
 type ProgressReader struct {
 	io.Reader
-	max      int64
-	Reporter ProgressReporterFunc
+	Max    int64
+	Add    func(int64)
+	SetMax func(int64)
 }
 
 func (r *ProgressReader) Read(p []byte) (n int, err error) {
 	n, err = r.Reader.Read(p)
-	if r.Reporter != nil {
-		r.Reporter(int64(n), r.max)
-	}
+	r.Add(int64(n))
 	return
 }
 
-func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter ProgressReporterFunc) error {
+func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter *ProgressReader) error {
 	url := fmt.Sprintf("apps/%s/files", app)
 
 	body := new(bytes.Buffer)
@@ -126,13 +123,10 @@ func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter Progres
 
 	writer.Close()
 
-	bodyWithReporter := &ProgressReader{
-		Reader:   body,
-		Reporter: reporter,
-		max:      int64(body.Len()),
-	}
+	reporter.Reader = body
+	reporter.SetMax(int64(body.Len()))
 
-	req, err := c.NewRequest(http.MethodPost, url, bodyWithReporter)
+	req, err := c.NewRequest(http.MethodPost, url, reporter)
 	if err != nil {
 		return err
 	}

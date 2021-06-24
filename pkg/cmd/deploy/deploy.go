@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
+	"github.com/dustin/go-humanize"
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/cmd/logs"
@@ -120,10 +121,13 @@ func (o *DeployOptions) Run(ctx *cli.Context) error {
 
 	o.printAppInfo()
 	fmt.Println(ui.Info("Getting files..."))
+
 	files, err := fileutils.GetFiles(o.Path)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(ui.Info("Creating Deployment..."))
 
 	var deployment *api.Deployment
 	err = retry.Do(func() error {
@@ -166,21 +170,24 @@ func (o *DeployOptions) Run(ctx *cli.Context) error {
 
 func uploadChanges(ctx *cli.Context, projectPath, app string, files []*api.FileInfo) error {
 	fmt.Println(ui.Info("Getting changed files..."))
+	fmt.Println(ui.Details(fmt.Sprintf("%d Files changed", len(files))))
 	tarBuf := new(bytes.Buffer)
 	err := fileutils.Compress(projectPath, files, tarBuf)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(ui.Info("Uploading..."))
+	fmt.Println(ui.Info("Uploading changed files..."))
 
-	bar := ui.NewProgress(0)
-	updateProgress := func(n int64, max int64) {
-		bar.ChangeMax64(max)
-		bar.Set64(n)
+	fmt.Println(ui.Details(ui.KeyValue("Upload size", humanize.Bytes(uint64(tarBuf.Len())))))
+	bar := ui.NewProgress(tarBuf.Len(), "Uploading")
+
+	reporter := &api.ProgressReader{
+		SetMax: func(max int64) { bar.ChangeMax64(max) },
+		Add:    func(n int64) { bar.Add64(n) },
 	}
 
-	return ctx.Client.AppsUploadFiles(app, tarBuf, updateProgress)
+	return ctx.Client.AppsUploadFiles(app, tarBuf, reporter)
 }
 
 func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
