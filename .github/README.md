@@ -1,7 +1,7 @@
 <h1 align="center">Fing cli</h1>
 
 <p align="center">
-  <img width="200" height="170" src="https://fing.ir/images/icon.png" alt="fing icon" />
+  <img width="140" height="140" src="https://fing.ir/images/icon.png" alt="fing icon" />
 </p>
 
 <p align="center">
