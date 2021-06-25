@@ -71,7 +71,11 @@ func (o *LogsOptions) Run(ctx *cli.Context) error {
 		}
 
 		for _, log := range logs {
-			fmt.Println(ui.Gray(log.Message))
+			var timestamp string
+			if o.Timestamps {
+				timestamp = time.Unix(log.Timestamp, 0).Format("2006-01-02 15:04:05 ")
+			}
+			fmt.Printf("%s%s\n", timestamp, log.Message)
 		}
 
 		if !o.Follow {
