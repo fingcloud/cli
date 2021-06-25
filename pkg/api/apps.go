@@ -109,9 +109,10 @@ func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter *Progre
 	url := fmt.Sprintf("apps/%s/files", app)
 
 	body := new(bytes.Buffer)
-	writer := multipart.NewWriter(body)
+	m := multipart.NewWriter(body)
+	defer m.Close()
 
-	file, err := writer.CreateFormFile("file", "file")
+	file, err := m.CreateFormFile("file", "file")
 	if err != nil {
 		return err
 	}
@@ -121,8 +122,6 @@ func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter *Progre
 		return err
 	}
 
-	writer.Close()
-
 	reporter.Reader = body
 	reporter.SetMax(int64(body.Len()))
 
@@ -131,7 +130,7 @@ func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter *Progre
 		return err
 	}
 
-	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Content-Type", m.FormDataContentType())
 
 	_, err = c.Do(req, nil)
 	if err != nil {
