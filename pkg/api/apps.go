@@ -110,7 +110,6 @@ func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter *Progre
 
 	body := new(bytes.Buffer)
 	m := multipart.NewWriter(body)
-	defer m.Close()
 
 	file, err := m.CreateFormFile("file", "file")
 	if err != nil {
@@ -121,6 +120,8 @@ func (c *Client) AppsUploadFiles(app string, tarfile io.Reader, reporter *Progre
 	if err != nil {
 		return err
 	}
+
+	m.Close()
 
 	reporter.Reader = body
 	reporter.SetMax(int64(body.Len()))
