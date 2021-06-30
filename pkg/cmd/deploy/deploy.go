@@ -88,7 +88,7 @@ func (o *DeployOptions) Init(ctx *cli.Context, args []string) error {
 
 		appOptions := funk.Map(apps, func(app *api.App) string { return app.Name }).([]string)
 
-		err = ui.PromptSelect("Choose your app", appOptions, o.config.App)
+		err = ui.PromptSelect("Choose your app", appOptions, &o.config.App)
 		util.CheckErr(err)
 	}
 
