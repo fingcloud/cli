@@ -87,6 +87,12 @@ func (o *DeployOptions) Init(ctx *cli.Context, args []string) error {
 		util.CheckErr(err)
 
 		appOptions := funk.Map(apps, func(app *api.App) string { return app.Name }).([]string)
+		if len(appOptions) == 0 {
+			fmt.Println("you don't have any apps on fing")
+			fmt.Println("go to fing dashboard and create one:")
+			fmt.Printf("\t%s\n\n", ui.Green("https://dashboard.fing.ir/apps"))
+			return fmt.Errorf("empty apps")
+		}
 
 		err = ui.PromptSelect("Choose your app", appOptions, &o.config.App)
 		util.CheckErr(err)
