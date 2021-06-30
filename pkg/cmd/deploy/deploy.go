@@ -54,6 +54,7 @@ func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&o.config.App, "app", "a", o.config.App, "app name")
+	cmd.Flags().StringVar(&o.config.Platform, "platform", o.config.Platform, "your app platform")
 	cmd.Flags().StringVar(&o.Path, "path", ".", "app path")
 	cmd.Flags().BoolVarP(&o.Quite, "quite", "q", o.Quite, "quite output")
 	cmd.Flags().BoolVarP(&o.Dispatch, "dispatch", "d", o.Quite, "dispatch logs")
