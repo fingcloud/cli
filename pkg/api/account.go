@@ -27,7 +27,7 @@ type User struct {
 }
 
 func (c *Client) AccountLogin(opts *AccountLoginOptions) (*Auth, error) {
-	url := fmt.Sprintf("users/login")
+	url := fmt.Sprintf("user/login")
 
 	req, err := c.NewRequest(http.MethodPost, url, opts)
 	if err != nil {
@@ -44,7 +44,7 @@ func (c *Client) AccountLogin(opts *AccountLoginOptions) (*Auth, error) {
 }
 
 func (c *Client) AccountRegister(opts *AccountRegisterOptions) (*Auth, error) {
-	url := fmt.Sprintf("users/register")
+	url := fmt.Sprintf("user/register")
 
 	req, err := c.NewRequest(http.MethodPost, url, opts)
 	if err != nil {
