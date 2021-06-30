@@ -111,16 +111,20 @@ var (
 type Response struct {
 	*http.Response
 	Files   []*FileInfo `json:"files"`
-	Message string      `json:"error"`
+	Err     string      `json:"error"`
+	Message string      `json:"message"`
 }
 
 func (r *Response) Error() string {
-	return r.Message
+	if r.Message != "" {
+		return r.Message
+	}
+	return r.Err
 	// return fmt.Sprintf("%v %v: %d %v", r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message)
 }
 
 func (r *Response) IsUploadChangesErr() bool {
-	return r.StatusCode == 404 && r.Message == "upload changed files"
+	return r.StatusCode == 404 && r.Err == "missing_files"
 }
 
 func CheckResponse(r *Response) error {
