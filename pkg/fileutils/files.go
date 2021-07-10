@@ -15,7 +15,7 @@ import (
 
 func GetFiles(projectPath string) ([]*api.FileInfo, error) {
 	patterns := loadIgnorefiles(projectPath)
-	patterns = append(patterns, defaultIngnores...)
+	patterns = append(patterns, defaultIgnores...)
 
 	ignore := ignore.CompileIgnoreLines(patterns...)
 

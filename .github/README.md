@@ -38,7 +38,7 @@ yarn global add @fingcloud/cli
 ```
 
 ### CURL
-comming soon
+coming soon
 
 
 ## Documentation

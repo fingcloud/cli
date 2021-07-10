@@ -265,7 +265,7 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusRunning {
-			fmt.Println(ui.Info("App Started successfuly"))
+			fmt.Println(ui.Info("App Started successfully"))
 			fmt.Println()
 			fmt.Println(fmt.Sprintf("\topen the following url in your browser:"))
 			fmt.Println(fmt.Sprintf("\t%s", ui.Green(buildLogs.Deployment.URL)))

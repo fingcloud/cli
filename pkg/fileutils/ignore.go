@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	defaultIngnores = []string{".git", "node_modules", "*.*~", "bower_components", ".*"}
+	defaultIgnores = []string{".git", "node_modules", "*.*~", "bower_components", ".*"}
 )
 
 func readIgnoreFile(fpath string) ([]string, error) {
