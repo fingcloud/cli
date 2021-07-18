@@ -113,14 +113,6 @@ func (o *DeployOptions) Validate() error {
 		return fmt.Errorf("app can't be empty")
 	}
 
-	if o.config.Platform == "" {
-		return fmt.Errorf("platform not specified")
-	}
-
-	if o.config.Port == 0 {
-		return fmt.Errorf("port not specified")
-	}
-
 	return nil
 }
 
