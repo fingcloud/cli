@@ -53,6 +53,13 @@ func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
 		},
 	}
 
+	configPath := filepath.Join(o.Path, "fing.yaml")
+	f, err := os.Open(configPath)
+	if err == nil {
+		err = yaml.NewDecoder(f).Decode(o.config)
+		util.CheckErr(err)
+	}
+
 	cmd.Flags().StringVarP(&o.config.App, "app", "a", o.config.App, "app name")
 	cmd.Flags().StringVar(&o.config.Platform, "platform", o.config.Platform, "your app platform")
 	cmd.Flags().StringVar(&o.Path, "path", ".", "app path")
@@ -69,15 +76,6 @@ func NewOptions() *DeployOptions {
 }
 
 func (o *DeployOptions) Init(ctx *cli.Context, args []string) error {
-
-	configPath := filepath.Join(o.Path, "fing.yaml")
-	f, err := os.Open(configPath)
-	if err == nil {
-		err = yaml.NewDecoder(f).Decode(o.config)
-		if err != nil {
-			return err
-		}
-	}
 
 	if len(args) == 1 {
 		o.config.App = args[0]
