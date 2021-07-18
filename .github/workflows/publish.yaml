@@ -22,6 +22,13 @@ jobs:
         with:
           go-version: ^1.16
 
+      - name: Docker Login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+        run: |
+          echo "${DOCKER_PASS}" | docker login --username "${DOCKER_USER}" --password-stdin
+
       - name: Goreleaser
         uses: goreleaser/goreleaser-action@v2
         with:
