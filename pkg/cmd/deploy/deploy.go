@@ -153,6 +153,11 @@ func (o *DeployOptions) Run(ctx *cli.Context) error {
 		return err
 	}
 
+	fmt.Println(ui.Info("Analyzing..."))
+	if deployment.Platform != "" {
+		fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(deployment.Platform))
+	}
+
 	err = readBuildLogs(ctx, o.config.App, deployment.ID)
 	if err != nil {
 		return err
@@ -273,6 +278,4 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 
 func (o *DeployOptions) printAppInfo() {
 	fmt.Printf("%s %s\n", ui.Gray("app:"), ui.Green(o.config.App))
-	fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(o.config.Platform))
-	fmt.Printf("%s %d\n", ui.Gray("port:"), ui.Green(o.config.Port))
 }
