@@ -45,6 +45,9 @@ func WriteAuthConfig(cfg *AuthConfig) error {
 	}
 
 	configPath := path.Join(home, ".fing")
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		os.MkdirAll(configPath, os.ModePerm)
+	}
 	authPath := path.Join(configPath, "auth.json")
 
 	return os.WriteFile(authPath, bs, 0644)
