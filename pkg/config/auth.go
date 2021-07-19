@@ -19,8 +19,10 @@ func ReadAuthConfig() (*AuthConfig, error) {
 		return nil, err
 	}
 
-	path := path.Join(home, ".fing")
-	bs, err := os.ReadFile(path)
+	configPath := path.Join(home, ".fing")
+	authPath := path.Join(configPath, "auth.json")
+
+	bs, err := os.ReadFile(authPath)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +44,8 @@ func WriteAuthConfig(cfg *AuthConfig) error {
 		return err
 	}
 
-	path := path.Join(home, ".fing")
-	return os.WriteFile(path, bs, 0644)
+	configPath := path.Join(home, ".fing")
+	authPath := path.Join(configPath, "auth.json")
+
+	return os.WriteFile(authPath, bs, 0644)
 }
