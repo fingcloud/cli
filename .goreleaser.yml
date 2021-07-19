@@ -24,7 +24,7 @@ builds:
       - -X github.com/fingcloud/cli/pkg/cli.Commit={{ .ShortCommit }}
 
 archives:
-  - name_template: "fing-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+  - name_template: "fing-{{ .Os }}-{{ .Arch }}"
     format_overrides:
       - goos: windows
         format: zip
