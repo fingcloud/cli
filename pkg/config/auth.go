@@ -19,17 +19,17 @@ func ReadAuthConfig() (*AuthConfig, error) {
 		return nil, err
 	}
 
-	configPath := path.Join(home, ".fing")
+	cfg := new(AuthConfig)
+
+	configPath := path.Join(home, ".fing", "auth.json")
 	authPath := path.Join(configPath, "auth.json")
 
 	bs, err := os.ReadFile(authPath)
 	if err != nil {
-		return nil, err
+		return cfg, err
 	}
 
-	cfg := new(AuthConfig)
 	err = json.Unmarshal(bs, cfg)
-
 	return cfg, err
 }
 
