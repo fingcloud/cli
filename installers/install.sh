@@ -5,7 +5,7 @@
 set -e
 
 
-if [ "$OS" != "Windows_NT" ]; then
+if [ "$OS" = "Windows_NT" ]; then
   echo "Error: Windows platform detected"
 	echo "check out documentation for installation on Windows" 1>&2
 	echo 'https://docs.fing.ir/cli/installation' 1>&2
