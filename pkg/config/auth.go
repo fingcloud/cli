@@ -21,7 +21,7 @@ func ReadAuthConfig() (*AuthConfig, error) {
 
 	cfg := new(AuthConfig)
 
-	configPath := path.Join(home, ".fing", "auth.json")
+	configPath := path.Join(home, ".fing")
 	authPath := path.Join(configPath, "auth.json")
 
 	bs, err := os.ReadFile(authPath)
