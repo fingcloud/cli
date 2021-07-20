@@ -17,7 +17,7 @@
   "goBinary": {
     "name": "fing",
     "path": "./bin",
-    "url": "https://github.com/fingcloud/cli/releases/download/v{{version}}/fing-{{version}}-{{platform}}-{{arch}}.tar.gz"
+    "url": "https://github.com/fingcloud/cli/releases/download/v{{version}}/fing-{{platform}}-{{arch}}.tar.gz"
   },
   "files": [],
   "dependencies": {
