@@ -7,9 +7,9 @@ set -e
 
 if [ "$OS" = "Windows_NT" ]; then
   echo "Error: Windows platform detected"
-	echo "check out documentation for installation on Windows" 1>&2
-	echo 'https://docs.fing.ir/cli/installation' 1>&2
-	exit 1
+  echo "check out documentation for installation on Windows" 1>&2
+  echo 'https://docs.fing.ir/cli/installation' 1>&2
+  exit 1
 fi
 
 case $(uname -s) in 
@@ -27,9 +27,9 @@ echo "==> Downloading for $os $arch"
 
 ext="tar.gz"
 if [ $# -eq 0 ]; then
-	fing_uri="https://github.com/fingcloud/cli/releases/latest/download/fing-${os}-${arch}.${ext}"
+  fing_uri="https://github.com/fingcloud/cli/releases/latest/download/fing-${os}-${arch}.${ext}"
 else
-	fing_uri="https://github.com/fingcloud/cli/releases/download/${1}/fing-${os}-${arch}.${ext}"
+  fing_uri="https://github.com/fingcloud/cli/releases/download/${1}/fing-${os}-${arch}.${ext}"
 fi
 
 fing_install="${FING_INSTALL:-$HOME/.fing}"
@@ -37,7 +37,7 @@ bin_dir="$fing_install/bin"
 exe="$bin_dir/fing"
 
 if [ ! -d "$bin_dir" ]; then
-	mkdir -p "$bin_dir"
+  mkdir -p "$bin_dir"
 fi
 
 curl --fail --location --progress-bar --output "$exe.$ext" "$fing_uri"
@@ -48,14 +48,14 @@ rm "$exe.$ext"
 
 echo "Finc CLI was installed successfully to $exe"
 if command -v fing >/dev/null; then
-	echo "Run 'fing --help' to get started"
+  echo "Run 'fing --help' to get started"
 else
-	case $SHELL in
-	/bin/zsh) shell_profile=".zshrc" ;;
-	*) shell_profile=".bash_profile" ;;
-	esac
-	echo "Manually add the directory to your \$HOME/$shell_profile (or similar)"
-	echo "  export FING_INSTALL=\"$fing_install\""
-	echo "  export PATH=\"\$FING_INSTALL/bin:\$PATH\""
-	echo "Run '$exe --help' to get started"
+  case $SHELL in
+  /bin/zsh) shell_profile=".zshrc" ;;
+  *) shell_profile=".bash_profile" ;;
+  esac
+  echo "Manually add the directory to your \$HOME/$shell_profile (or similar)"
+  echo "  export FING_INSTALL=\"$fing_install\""
+  echo "  export PATH=\"\$FING_INSTALL/bin:\$PATH\""
+  echo "Run '$exe --help' to get started"
 fi
