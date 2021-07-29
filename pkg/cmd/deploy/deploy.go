@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -17,12 +16,12 @@ import (
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/cmd/logs"
 	"github.com/fingcloud/cli/pkg/cmd/util"
+	"github.com/fingcloud/cli/pkg/config"
 	"github.com/fingcloud/cli/pkg/fileutils"
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/spf13/cobra"
 	"github.com/thoas/go-funk"
 	"go.uber.org/atomic"
-	"gopkg.in/yaml.v3"
 )
 
 type DeployOptions struct {
@@ -53,12 +52,15 @@ func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
 		},
 	}
 
-	configPath := filepath.Join(o.Path, "fing.yaml")
-	f, err := os.Open(configPath)
-	if err == nil {
-		err = yaml.NewDecoder(f).Decode(o.config)
-		util.CheckErr(err)
-	}
+	// configPath := filepath.Join(o.Path, "fing.yaml")
+	// f, err := os.Open(configPath)
+	// if err == nil {
+	// 	err = yaml.NewDecoder(f).Decode(o.config)
+	// 	util.CheckErr(err)
+	// }
+	var err error
+	o.config, err = config.ReadAppConfig(o.Path)
+	util.CheckErr(err)
 
 	cmd.Flags().StringVarP(&o.config.App, "app", "a", o.config.App, "app name")
 	cmd.Flags().StringVar(&o.config.Platform, "platform", o.config.Platform, "your app platform")
