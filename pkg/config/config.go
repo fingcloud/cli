@@ -1,36 +1,61 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 
 	"github.com/fingcloud/cli/pkg/api"
-	"gopkg.in/yaml.v3"
+	"github.com/fingcloud/cli/pkg/config/encoding"
 )
 
+var (
+	ErrConfigFileNotFound = errors.New("fing config file not found")
+
+	configFiles = []string{
+		"fing.yaml",
+		"fing.yml",
+		"fing.json",
+		"fing.toml",
+	}
+)
+
+func findConfigFile(path string) (string, error) {
+	for _, configFile := range configFiles {
+		configPath := filepath.Join(path, configFile)
+		if _, err := os.Stat(configPath); os.IsNotExist(err) {
+			continue
+		}
+		return configPath, nil
+	}
+	return "", ErrConfigFileNotFound
+}
+
+// ReadAppConfig reads config file from path
 func ReadAppConfig(path string) (*api.AppConfig, error) {
-	configPath := filepath.Join(path, "fing.yaml")
-	f, err := os.Open(configPath)
+	configPath, err := findConfigFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
 
 	cfg := new(api.AppConfig)
-	err = yaml.NewDecoder(f).Decode(cfg)
-	if err != nil {
-		return nil, err
-	}
+	err = encoding.Decode(filepath.Ext(configPath)[1:], bytes, cfg)
 
-	return cfg, nil
+	return cfg, err
 }
 
-func WriteAppConfig(path string, cfg *api.AppConfig) error {
-
-	bs, err := yaml.Marshal(cfg)
+// WriteAppConfig writes config file to path
+func WriteAppConfig(path, filename string, cfg *api.AppConfig) error {
+	bytes, err := encoding.Encode(filepath.Ext(filename)[1:], cfg)
 	if err != nil {
 		return err
 	}
 
-	configPath := filepath.Join(path, ".fing.yaml")
-	return os.WriteFile(configPath, bs, 0644)
+	configPath := filepath.Join(path, filename)
+	return os.WriteFile(configPath, bytes, 0644)
 }
