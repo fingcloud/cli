@@ -242,7 +242,8 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 					continue
 				}
 
-				fmt.Printf("\r\033[0K%s\n", ui.Gray(log.Message))
+				s.ClearCurrentLine()
+				fmt.Println(ui.Gray(log.Message))
 
 				if strings.HasPrefix(log.Message, "Successfully tagged") {
 					s.Success()

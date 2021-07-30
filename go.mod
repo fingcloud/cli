@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pelletier/go-toml v1.2.0
-	github.com/r6m/spinner v0.5.5
+	github.com/r6m/spinner v0.5.6
 	github.com/sabhiram/go-gitignore v0.0.0-20201211210132-54b8a0bf510f
 	github.com/schollz/progressbar/v3 v3.8.1
 	github.com/spf13/cobra v1.1.3
