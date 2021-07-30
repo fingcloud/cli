@@ -53,9 +53,10 @@ func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
 		},
 	}
 
-	var err error
-	o.config, err = config.ReadAppConfig(o.Path)
-	util.CheckErr(err)
+	cfg, err := config.ReadAppConfig(o.Path)
+	if err == nil {
+		o.config = cfg
+	}
 
 	cmd.Flags().StringVarP(&o.config.App, "app", "a", o.config.App, "app name")
 	cmd.Flags().StringVar(&o.config.Platform, "platform", o.config.Platform, "your app platform")
