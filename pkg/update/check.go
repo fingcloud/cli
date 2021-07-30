@@ -61,10 +61,7 @@ func isUnderNpm() bool {
 }
 
 func CheckForUpdate(ctx context.Context, version string) (*Release, error) {
-	cfg, err := config.ReadAuthConfig()
-	if err != nil {
-		return nil, err
-	}
+	cfg, _ := config.ReadFingConfig()
 
 	if time.Since(cfg.LastCheckedAt).Hours() > 12 {
 		release, err := getLatestVersion(ctx)
@@ -73,7 +70,7 @@ func CheckForUpdate(ctx context.Context, version string) (*Release, error) {
 		}
 
 		cfg.LastCheckedAt = time.Now()
-		if err := config.WriteAuthConfig(cfg); err != nil {
+		if err := config.WriteFingConfig(cfg); err != nil {
 			return nil, err
 		}
 
