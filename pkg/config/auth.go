@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"time"
 
 	"github.com/mitchellh/go-homedir"
 )
 
 type AuthConfig struct {
-	Token string `json:"token"`
-	Email string `json:"email"`
+	Token         string    `json:"token"`
+	Email         string    `json:"email"`
+	LastCheckedAt time.Time `json:"last_checked_at"`
 }
 
 func ReadAuthConfig() (*AuthConfig, error) {
