@@ -4,7 +4,9 @@ go 1.16
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.12
+	github.com/Delta456/box-cli-maker/v2 v2.2.1
 	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/blang/semver/v4 v4.0.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0
@@ -22,5 +24,5 @@ require (
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 )
