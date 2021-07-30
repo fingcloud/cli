@@ -19,6 +19,7 @@ import (
 	"github.com/fingcloud/cli/pkg/config"
 	"github.com/fingcloud/cli/pkg/fileutils"
 	"github.com/fingcloud/cli/pkg/ui"
+	"github.com/r6m/spinner"
 	"github.com/spf13/cobra"
 	"github.com/thoas/go-funk"
 	"go.uber.org/atomic"
@@ -52,12 +53,6 @@ func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
 		},
 	}
 
-	// configPath := filepath.Join(o.Path, "fing.yaml")
-	// f, err := os.Open(configPath)
-	// if err == nil {
-	// 	err = yaml.NewDecoder(f).Decode(o.config)
-	// 	util.CheckErr(err)
-	// }
 	var err error
 	o.config, err = config.ReadAppConfig(o.Path)
 	util.CheckErr(err)
@@ -116,17 +111,19 @@ func (o *DeployOptions) Validate() error {
 	return nil
 }
 
-func (o *DeployOptions) Run(ctx *cli.Context) error {
+var s = spinner.NewSpinner().WithOptions(spinner.WithExitOnAbort(false))
 
+func (o *DeployOptions) Run(ctx *cli.Context) error {
 	o.printAppInfo()
-	fmt.Println(ui.Info("Getting files..."))
+	s.Start("Getting files...")
 
 	files, err := fileutils.GetFiles(o.Path)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(ui.Info("Creating Deployment..."))
+	s.Success()
+	s.Start("Creating Deployment...")
 
 	var deployment *api.Deployment
 	err = retry.Do(func() error {
@@ -152,13 +149,16 @@ func (o *DeployOptions) Run(ctx *cli.Context) error {
 		retry.Attempts(3),
 	)
 	if err != nil {
+		s.Error(err.Error())
 		return err
 	}
 
-	fmt.Println(ui.Info("Analyzing..."))
+	s.Success()
+	s.Start("Analyzing...")
 	if deployment.Platform != "" {
 		fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(deployment.Platform))
 	}
+	s.Success()
 
 	err = readBuildLogs(ctx, o.config.App, deployment.ID)
 	if err != nil {
@@ -173,15 +173,16 @@ func (o *DeployOptions) Run(ctx *cli.Context) error {
 }
 
 func uploadChanges(ctx *cli.Context, projectPath, app string, files []*api.FileInfo) error {
-	fmt.Println(ui.Info("Getting changed files..."))
+	s.UpdateMessage("Getting changed files...")
 	fmt.Println(ui.Details(fmt.Sprintf("%d Files changed", len(files))))
 	tarBuf := new(bytes.Buffer)
 	err := fileutils.Compress(projectPath, files, tarBuf)
 	if err != nil {
+		s.Error()
 		return err
 	}
 
-	fmt.Println(ui.Info("Uploading changed files..."))
+	s.UpdateMessage("Uploading changed files...")
 
 	fmt.Println(ui.Details(ui.KeyValue("Upload size", humanize.Bytes(uint64(tarBuf.Len())))))
 	bar := ui.NewProgress(tarBuf.Len(), "Uploading")
@@ -194,8 +195,8 @@ func uploadChanges(ctx *cli.Context, projectPath, app string, files []*api.FileI
 	return ctx.Client.AppsUploadFiles(app, tarBuf, reporter)
 }
 
-func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
-	fmt.Println(ui.Info("Building..."))
+func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
+	s.Start("Building...")
 
 	interruptCh := make(chan os.Signal, 1)
 	stopCh := make(chan bool, 1)
@@ -216,9 +217,8 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 			case <-stopCh:
 				return
 			case <-interruptCh:
-				fmt.Println(ui.Warning("Cancelling..."))
 				canceled.Store(true)
-				ctx.Client.DeploymentCancel(app, deploymentId)
+				ctx.Client.DeploymentCancel(app, deploymentID)
 				return
 			}
 		}
@@ -227,7 +227,7 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 	var from int64
 	var starting bool
 	for {
-		buildLogs, err := ctx.Client.DeploymentBuildLogs(app, deploymentId, &api.LogsOptions{From: from})
+		buildLogs, err := ctx.Client.DeploymentBuildLogs(app, deploymentID, &api.LogsOptions{From: from})
 		if err != nil {
 			return err
 		}
@@ -240,29 +240,34 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentId int64) error {
 				if log.Message == "" {
 					continue
 				}
-				fmt.Println(ui.Gray(log.Message))
+
+				fmt.Printf("\r\033[0K%s\n", ui.Gray(log.Message))
+
 				if strings.HasPrefix(log.Message, "Successfully tagged") {
-					fmt.Println(ui.Info("Build completed"))
+					s.Success()
 					stopCh <- true
 				}
 			}
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusFailed {
+			s.Error("Build failed")
 			return errors.New("Build failed")
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusCancel {
+			s.Error("Build canceled")
 			return errors.New("Build canceled")
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusStarting && !starting {
-			fmt.Println(ui.Info("Starting..."))
+			s.Start("Starting...")
 			starting = true
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusRunning {
-			fmt.Println(ui.Info("App Started successfully"))
+			s.Success()
+			fmt.Println(ui.Info("App started succesfully :)"))
 			fmt.Println()
 			fmt.Println(fmt.Sprintf("\topen the following url in your browser:"))
 			fmt.Println(fmt.Sprintf("\t%s", ui.Green(buildLogs.Deployment.URL)))
