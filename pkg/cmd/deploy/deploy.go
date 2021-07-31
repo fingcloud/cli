@@ -112,7 +112,7 @@ func (o *DeployOptions) Validate() error {
 	return nil
 }
 
-var s = spinner.NewSpinner().WithOptions(spinner.WithExitOnAbort(false))
+var s = spinner.New().WithOptions(spinner.WithExitOnAbort(false), spinner.WithNotifySignals(false))
 
 func (o *DeployOptions) Run(ctx *cli.Context) error {
 	o.printAppInfo()
