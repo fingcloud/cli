@@ -156,10 +156,10 @@ func (o *DeployOptions) Run(ctx *cli.Context) error {
 
 	s.Success()
 	s.Start("Analyzing...")
+	s.Success()
 	if deployment.Platform != "" {
 		fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(deployment.Platform))
 	}
-	s.Success()
 
 	err = readBuildLogs(ctx, o.config.App, deployment.ID)
 	if err != nil {
