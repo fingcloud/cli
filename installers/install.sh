@@ -46,7 +46,7 @@ tar xzf "$exe.$ext"
 chmod +x "$exe"
 rm "$exe.$ext"
 
-echo "Finc CLI was installed successfully to $exe"
+echo "Fing CLI was installed successfully to $exe"
 if command -v fing >/dev/null; then
   echo "Run 'fing --help' to get started"
 else
