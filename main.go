@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/fingcloud/cli/pkg/cmd"
+	cmd "github.com/fingcloud/cli/pkg/command"
 )
 
 func main() {

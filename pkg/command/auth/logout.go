@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/fingcloud/cli/pkg/cli"
-	"github.com/fingcloud/cli/pkg/cmd/util"
+	"github.com/fingcloud/cli/pkg/command/util"
 	"github.com/fingcloud/cli/pkg/config"
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/spf13/cobra"
