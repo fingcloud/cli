@@ -7,7 +7,7 @@ import (
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/command/util"
-	"github.com/fingcloud/cli/pkg/config"
+	"github.com/fingcloud/cli/pkg/config/session"
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/spf13/cobra"
 )
@@ -79,11 +79,11 @@ func (o *LoginOptions) Run(ctx *cli.Context) error {
 
 	fmt.Println(ui.Green("Successfully logged in."))
 
-	cfg := &config.AuthConfig{
+	sess := session.Session{
 		Token: auth.Token,
 		Email: auth.User.Email,
 	}
-	err = config.WriteAuthConfig(cfg)
+	err = session.AddSession(sess)
 	if err != nil {
 		return err
 	}

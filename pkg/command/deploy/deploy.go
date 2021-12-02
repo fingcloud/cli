@@ -17,6 +17,7 @@ import (
 	"github.com/fingcloud/cli/pkg/command/logs"
 	"github.com/fingcloud/cli/pkg/command/util"
 	"github.com/fingcloud/cli/pkg/config"
+	"github.com/fingcloud/cli/pkg/config/session"
 	"github.com/fingcloud/cli/pkg/fileutils"
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/r6m/spinner"
@@ -74,6 +75,11 @@ func NewOptions() *DeployOptions {
 }
 
 func (o *DeployOptions) Init(ctx *cli.Context, args []string) error {
+	sess, err := session.CurrentSession()
+	if err != nil {
+		return err
+	}
+	fmt.Println(ui.Gray(fmt.Sprintf("Using session: %s", sess.Email)))
 
 	if len(args) == 1 {
 		o.config.App = args[0]

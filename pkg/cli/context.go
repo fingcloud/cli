@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/fingcloud/cli/pkg/api"
-	"github.com/fingcloud/cli/pkg/config"
+	"github.com/fingcloud/cli/pkg/config/session"
 	"github.com/spf13/pflag"
 )
 
@@ -48,8 +48,9 @@ func stringptr(val string) *string {
 func (c *Context) SetupClient() {
 	var accessToken string
 
-	cfg, _ := config.ReadAuthConfig()
-	accessToken = cfg.Token
+	sess, _ := session.CurrentSession()
+
+	accessToken = sess.Token
 
 	if *c.AccessToken != "" {
 		accessToken = *c.AccessToken

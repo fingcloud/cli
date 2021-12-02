@@ -34,6 +34,7 @@ func NewFingCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 	cmd.AddCommand(version.NewCmdVersion(ctx))
 	cmd.AddCommand(auth.NewCmdLogin(ctx))
 	cmd.AddCommand(auth.NewCmdLogout(ctx))
+	cmd.AddCommand(auth.NewCmdSetSession(ctx))
 	cmd.AddCommand(logs.NewCmdLogs(ctx))
 	cmd.AddCommand(deploy.NewCmdDeploy(ctx))
 

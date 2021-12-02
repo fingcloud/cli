@@ -5,7 +5,7 @@ import (
 
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/command/util"
-	"github.com/fingcloud/cli/pkg/config"
+	"github.com/fingcloud/cli/pkg/config/session"
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/spf13/cobra"
 )
@@ -40,15 +40,11 @@ func (o *LogoutOptions) Validate() error {
 }
 
 func (o *LogoutOptions) Run(ctx *cli.Context) error {
-	cfg := &config.AuthConfig{
-		Token: "",
-		Email: "",
-	}
-	err := config.WriteAuthConfig(cfg)
+	sess, err := session.RemoveSession()
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(ui.Gray("Logged out"))
+	fmt.Println(ui.Gray(fmt.Sprintf("Logged out %s", sess.Email)))
 	return nil
 }
