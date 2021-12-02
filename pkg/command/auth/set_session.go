@@ -15,7 +15,6 @@ import (
 
 type SetSessionOptions struct {
 	Email string
-	login *LoginOptions
 }
 
 func NewCmdSetSession(ctx *cli.Context) *cobra.Command {
