@@ -14,10 +14,11 @@ import (
 )
 
 func GetFiles(projectPath string) ([]*api.FileInfo, error) {
-	patterns := loadIgnorefiles(projectPath)
+	patterns := make([]string, 0)
 	patterns = append(patterns, defaultIgnores...)
 
-	ignore := ignore.CompileIgnoreLines(patterns...)
+	cachedDirs := make(map[string]bool, 0)
+	ig := ignore.CompileIgnoreLines(patterns...)
 
 	files := make([]*api.FileInfo, 0)
 
@@ -26,7 +27,17 @@ func GetFiles(projectPath string) ([]*api.FileInfo, error) {
 			return err
 		}
 
-		if ignore.MatchesPath(path) {
+		// has ignorefile ? add to patterns
+		if info.IsDir() {
+			if _, ok := cachedDirs[path]; !ok {
+				dirPatterns := loadIgnorefiles(projectPath, path)
+				patterns = append(patterns, dirPatterns...)
+				ig = ignore.CompileIgnoreLines(patterns...)
+				cachedDirs[path] = true
+			}
+		}
+
+		if ig.MatchesPath(path) {
 			return nil
 		}
 

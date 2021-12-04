@@ -23,13 +23,19 @@ func readIgnoreFile(fpath string) ([]string, error) {
 	lines := strings.Split(string(bytes), "\n")
 
 	patterns := funk.FilterString(lines, func(s string) bool {
-		return !strings.HasPrefix(s, "#") || strings.TrimSpace(s) != ""
+		if strings.HasPrefix(s, "#") {
+			return false
+		}
+		if strings.TrimSpace(s) == "" {
+			return false
+		}
+		return true
 	})
 
 	return patterns, nil
 }
 
-func loadIgnorefiles(path string) []string {
+func loadIgnorefiles(projectPath, path string) []string {
 
 	ignorePatterns := make([]string, 0)
 
@@ -44,6 +50,28 @@ func loadIgnorefiles(path string) []string {
 	if patterns, err := readIgnoreFile(filepath.Join(path, ".fingignore")); err == nil {
 		ignorePatterns = append(ignorePatterns, patterns...)
 	}
+
+	ignorePatterns = funk.Map(ignorePatterns, func(pattern string) string {
+		pattern = strings.ReplaceAll(pattern, "\\", "/")
+
+		suffux := ""
+		if strings.HasSuffix(pattern, "/") {
+			suffux = "/"
+		}
+
+		absolute := ""
+		if strings.HasPrefix(pattern, "!") {
+			if string(pattern[1]) == "/" {
+				absolute = "/"
+			}
+			return "!" + absolute + filepath.Join(projectPath, path, pattern[1:]) + suffux
+		}
+
+		if string(pattern[0]) == "/" {
+			absolute = "/"
+		}
+		return absolute + filepath.Join(projectPath, path, pattern) + suffux
+	}).([]string)
 
 	return ignorePatterns
 }
