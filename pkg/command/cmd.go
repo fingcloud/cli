@@ -9,6 +9,7 @@ import (
 
 	"github.com/Delta456/box-cli-maker/v2"
 	"github.com/fingcloud/cli/pkg/cli"
+	"github.com/fingcloud/cli/pkg/command/app"
 	"github.com/fingcloud/cli/pkg/command/auth"
 	"github.com/fingcloud/cli/pkg/command/deploy"
 	"github.com/fingcloud/cli/pkg/command/logs"
@@ -37,6 +38,7 @@ func NewFingCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 	cmd.AddCommand(auth.NewCmdSetSession(ctx))
 	cmd.AddCommand(logs.NewCmdLogs(ctx))
 	cmd.AddCommand(deploy.NewCmdDeploy(ctx))
+	cmd.AddCommand(app.NewAppsCmd(ctx))
 
 	return cmd
 }

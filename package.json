@@ -1,6 +1,6 @@
 {
   "name": "@fingcloud/cli",
-  "version": "v0.1.11",
+  "version": "v0.1.12",
   "description": "Develop and deploy code with zero configuration",
   "main": "index.js",
   "author": "Fing",

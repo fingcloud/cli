@@ -30,9 +30,6 @@ func NewContext() *Context {
 }
 
 func (c *Context) AddFlags(flags *pflag.FlagSet) {
-	if c.Path != nil {
-		flags.StringVar(c.Path, "path", ".", "your application path")
-	}
 	if c.AccessToken != nil {
 		flags.StringVar(c.AccessToken, "access-token", *c.AccessToken, "access token for the API server authentication")
 	}

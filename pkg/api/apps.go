@@ -13,10 +13,22 @@ type ListAppsOptions struct {
 }
 
 type CreateAppOptions struct {
-	Name     string `json:"name"`
+	Label    string `json:"label"`
 	Platform string `json:"platform"`
 	PlanID   int64  `json:"plan_id"`
 	Region   string `json:"region"`
+}
+
+type RestartAppOptions struct {
+	Name string `json:"name"`
+}
+
+type ShutdownAppOptions struct {
+	Name string `json:"name"`
+}
+
+type StartAppOptions struct {
+	Name string `json:"name"`
 }
 
 type EnvItem struct {
@@ -27,7 +39,9 @@ type EnvItem struct {
 type App struct {
 	ID            int64        `json:"id"`
 	Name          string       `json:"name"`
+	Label         string       `json:"label"`
 	Platform      string       `json:"platform"`
+	Status        string       `json:"status"`
 	Port          int          `json:"port"`
 	Region        string       `json:"region"`
 	DomainEnabled bool         `json:"domain_enabled"`
@@ -90,6 +104,54 @@ func (c *Client) AppsCreate(opts *CreateAppOptions) (*App, error) {
 	}
 
 	return v, err
+}
+
+func (c *Client) AppsRestart(opts *RestartAppOptions) error {
+	url := fmt.Sprintf("apps/%s/restart", opts.Name)
+
+	req, err := c.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (c *Client) AppsShutdown(opts *ShutdownAppOptions) error {
+	url := fmt.Sprintf("apps/%s/shutdown", opts.Name)
+
+	req, err := c.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (c *Client) AppsStart(opts *StartAppOptions) error {
+	url := fmt.Sprintf("apps/%s/start", opts.Name)
+
+	req, err := c.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
 
 type ProgressReader struct {
