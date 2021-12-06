@@ -82,7 +82,7 @@ func (c printContext) Status() string {
 
 func (c printContext) CreatedAt() string {
 	if c.app.CreatedAt == nil {
-		return "unset"
+		return "-"
 	}
 	return util.FuzzyAgo(time.Now().Sub(*c.app.CreatedAt))
 }
