@@ -11,8 +11,6 @@ import (
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/cmd/app"
 	"github.com/fingcloud/cli/pkg/cmd/auth"
-	"github.com/fingcloud/cli/pkg/cmd/deploy"
-	"github.com/fingcloud/cli/pkg/cmd/version"
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/fingcloud/cli/pkg/update"
 	"github.com/spf13/cobra"
@@ -32,10 +30,11 @@ func NewCmdRoot(in io.Reader, out, err io.Writer) *cobra.Command {
 
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 
-	cmd.AddCommand(version.NewCmdVersion(ctx))
 	cmd.AddCommand(auth.NewCmd(ctx))
-	cmd.AddCommand(deploy.NewCmdDeploy(ctx))
 	cmd.AddCommand(app.NewAppsCmd(ctx))
+	cmd.AddCommand(auth.NewCmdLogin(ctx))
+	cmd.AddCommand(NewCmdDeploy(ctx))
+	cmd.AddCommand(NewCmdVersion(ctx))
 
 	return cmd
 }
