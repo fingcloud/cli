@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/mitchellh/go-homedir"
-	"github.com/thoas/go-funk"
 )
 
 // Session stores user credentials
@@ -106,12 +105,15 @@ func CurrentSession() (*Session, error) {
 		return nil, err
 	}
 
-	found := funk.Find(sessions, func(sess *Session) bool { return sess.Default })
-	if sess, ok := found.(*Session); ok {
-		return sess, nil
+	for _, sess := range sessions {
+		if sess.Default {
+			now := time.Now()
+			sess.LastUsedAt = &now
+			return sess, Write(sessions)
+		}
 	}
 
-	return nil, errors.New("no default session")
+	return nil, errors.New("you need to login")
 }
 
 func UseSession(email string) error {
@@ -145,9 +147,14 @@ func RemoveSession() (*Session, error) {
 	for i, sess := range sessions {
 		if sess.Default {
 			sessions = append(sessions[:i], sessions[i+1:]...)
+			if i < len(sessions) {
+				sessions[i].Default = true
+			} else {
+				sessions[0].Default = true
+			}
 			return sess, Write(sessions)
 		}
 	}
 
-	return nil, errors.New("No default session found")
+	return nil, nil
 }

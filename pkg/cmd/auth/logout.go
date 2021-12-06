@@ -32,6 +32,6 @@ func runLogout(ctx *cli.Context, opts *LogoutOptions) error {
 	sess, err := session.RemoveSession()
 	util.CheckErr(err)
 
-	fmt.Println("Logged out %s", sess.Email)
+	fmt.Printf("Logged out %s\n", sess.Email)
 	return nil
 }
