@@ -7,15 +7,19 @@ import (
 
 func NewAppsCmd(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "app COMMAND",
+		Use:   "app [command]",
 		Short: "manage apps",
 		Args:  cli.NoArgs,
 	}
 
 	cmd.AddCommand(
-		newListCmd(ctx),
-		newCreateCmd(ctx),
-		newRestartCmd(ctx),
+		NewCmdList(ctx),
+		NewCmdCreate(ctx),
+		NewCmdRemove(ctx),
+		NewCmdStart(ctx),
+		NewCmdRestart(ctx),
+		NewCmdStop(ctx),
+		NewCmdLogs(ctx),
 	)
 
 	return cmd

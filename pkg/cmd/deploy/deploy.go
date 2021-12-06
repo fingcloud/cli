@@ -14,12 +14,12 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
-	"github.com/fingcloud/cli/pkg/command/logs"
-	"github.com/fingcloud/cli/pkg/command/util"
+	"github.com/fingcloud/cli/pkg/cmd/app"
 	"github.com/fingcloud/cli/pkg/config"
 	"github.com/fingcloud/cli/pkg/config/session"
 	"github.com/fingcloud/cli/pkg/fileutils"
 	"github.com/fingcloud/cli/pkg/ui"
+	"github.com/fingcloud/cli/pkg/util"
 	"github.com/r6m/spinner"
 	"github.com/spf13/cobra"
 	"github.com/thoas/go-funk"
@@ -30,7 +30,7 @@ type DeployOptions struct {
 	client *api.Client
 
 	config *api.AppConfig
-	logs   *logs.LogsOptions
+	logs   *app.LogsOptions
 
 	Path     string
 	Quite    bool
@@ -38,112 +38,103 @@ type DeployOptions struct {
 }
 
 func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
-	o := NewOptions()
+	opts := newOptions()
 
 	cmd := &cobra.Command{
 		Use:     "deploy",
 		Short:   "deploy your application",
-		Long:    "deploy your application",
 		Aliases: []string{"up"},
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
 
-			util.CheckErr(o.Init(ctx, args))
-			util.CheckErr(o.Validate())
-			util.CheckErr(o.Run(ctx))
+			RunDeploy(ctx, opts)
 		},
 	}
 
-	cfg, err := config.ReadAppConfig(o.Path)
+	cfg, err := config.ReadAppConfig(opts.Path)
 	if err == nil {
-		o.config = cfg
+		opts.config = cfg
 	}
 
-	cmd.Flags().StringVarP(&o.config.App, "app", "a", o.config.App, "app name")
-	cmd.Flags().StringVar(&o.config.Platform, "platform", o.config.Platform, "your app platform")
-	cmd.Flags().StringVar(&o.Path, "path", ".", "app path")
-	cmd.Flags().BoolVarP(&o.Quite, "quite", "q", o.Quite, "quite output")
-	cmd.Flags().BoolVarP(&o.Dispatch, "dispatch", "d", o.Quite, "dispatch logs")
+	cmd.Flags().StringVarP(&opts.config.App, "app", "a", opts.config.App, "app name")
+	cmd.Flags().StringVar(&opts.config.Platform, "platform", opts.config.Platform, "your app platform")
+	cmd.Flags().StringVar(&opts.Path, "path", ".", "app path")
+	cmd.Flags().BoolVarP(&opts.Quite, "quite", "q", opts.Quite, "quite output")
+	cmd.Flags().BoolVarP(&opts.Dispatch, "dispatch", "d", opts.Quite, "dispatch logs")
 
 	return cmd
 }
 
-func NewOptions() *DeployOptions {
-	o := new(DeployOptions)
-	o.config = &api.AppConfig{}
-	return o
+var s = spinner.New().WithOptions(spinner.WithExitOnAbort(false), spinner.WithNotifySignals(false))
+
+func newOptions() *DeployOptions {
+	opts := new(DeployOptions)
+	opts.config = &api.AppConfig{}
+	return opts
 }
 
-func (o *DeployOptions) Init(ctx *cli.Context, args []string) error {
-	sess, err := session.CurrentSession()
-	if err != nil {
-		return err
-	}
-	fmt.Println(ui.Gray(fmt.Sprintf("Using session: %s", sess.Email)))
-
-	if len(args) == 1 {
-		o.config.App = args[0]
-	}
-
-	if o.config.App == "" {
-		apps, err := ctx.Client.AppsList(&api.ListAppsOptions{})
-		util.CheckErr(err)
-
-		appOptions := funk.Map(apps, func(app *api.App) string { return app.Name }).([]string)
-		if len(appOptions) == 0 {
-			fmt.Println("you don't have any apps on fing")
-			fmt.Println("go to fing dashboard and create one:")
-			fmt.Printf("\t%s\n\n", ui.Green("https://dashboard.fing.ir/apps"))
-			return fmt.Errorf("empty apps")
-		}
-
-		err = ui.PromptSelect("Choose your app", appOptions, &o.config.App)
-		util.CheckErr(err)
-	}
-
-	o.logs = &logs.LogsOptions{
-		App:    o.config.App,
-		Since:  time.Second,
-		Follow: true,
-	}
-
-	return nil
-}
-
-func (o *DeployOptions) Validate() error {
-	if o.config.App == "" {
+func (opts *DeployOptions) validate() error {
+	if opts.config.App == "" {
 		return fmt.Errorf("app can't be empty")
 	}
 
 	return nil
 }
 
-var s = spinner.New().WithOptions(spinner.WithExitOnAbort(false), spinner.WithNotifySignals(false))
+// RunDeploy starts deploy process
+func RunDeploy(ctx *cli.Context, opts *DeployOptions) error {
+	sess, err := session.CurrentSession()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Using session: %s\n", sess.Email)
 
-func (o *DeployOptions) Run(ctx *cli.Context) error {
-	o.printAppInfo()
+	if opts.config.App == "" {
+		apps, err := ctx.Client.AppsList(&api.ListAppsOptions{})
+		util.CheckErr(err)
+
+		appOptions := funk.Map(apps, func(app *api.App) string { return app.Name }).([]string)
+		if len(appOptions) == 0 {
+			helpCreateApp()
+			return fmt.Errorf("empty apps")
+		}
+
+		err = ui.PromptSelect("Choose your app", appOptions, &opts.config.App)
+		util.CheckErr(err)
+	}
+
+	opts.logs = &app.LogsOptions{
+		App:    opts.config.App,
+		Since:  time.Second,
+		Follow: true,
+	}
+
+	err = opts.validate()
+	util.CheckErr(err)
+
+	opts.printAppInfo()
 	s.Start("Getting files...")
 
-	files, err := fileutils.GetFiles(o.Path)
+	files, err := fileutils.GetFiles(opts.Path)
 	if err != nil {
 		return err
 	}
 
-	s.Success()
+	s.Success("Getting files OK")
 	s.Start("Creating Deployment...")
 
 	var deployment *api.Deployment
-	err = retry.Do(func() error {
-		d, changes, err := ctx.Client.DeployemntCreate(o.config.App, &api.CreateDeploymentOptions{
+	deployFn := func() error {
+		d, changes, err := ctx.Client.DeployemntCreate(opts.config.App, &api.CreateDeploymentOptions{
 			Files:  files,
-			Config: o.config,
+			Config: opts.config,
 		})
 		if err != nil {
 			return retry.Unrecoverable(err)
 		}
 
 		if changes != nil {
-			err = uploadChanges(ctx, o.Path, o.config.App, changes)
+			err = uploadChanges(ctx, opts.Path, opts.config.App, changes)
 			if err != nil {
 				return retry.Unrecoverable(err)
 			}
@@ -152,28 +143,23 @@ func (o *DeployOptions) Run(ctx *cli.Context) error {
 
 		deployment = d
 		return nil
-	},
-		retry.Attempts(3),
-	)
-	if err != nil {
-		s.Error(err.Error())
+	}
+	if err := retry.Do(deployFn, retry.Attempts(3)); err != nil {
 		return err
 	}
 
-	s.Success()
-	s.Start("Analyzing...")
-	s.Success()
+	s.Success("Creating Deployment OK")
 	if deployment.Platform != "" {
-		fmt.Printf("%s %s\n", ui.Gray("platform:"), ui.Green(deployment.Platform))
+		fmt.Printf("platform: %s\n", ui.Green(deployment.Platform))
 	}
 
-	err = readBuildLogs(ctx, o.config.App, deployment.ID)
+	err = readBuildLogs(ctx, opts.config.App, deployment.ID)
 	if err != nil {
 		return err
 	}
 
-	if !o.Dispatch {
-		return o.logs.Run(ctx)
+	if !opts.Dispatch {
+		return app.RunLogs(ctx, opts.logs)
 	}
 
 	return nil
@@ -239,23 +225,23 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 			return err
 		}
 
-		if !canceled.Load() {
-			for _, log := range buildLogs.Logs {
-				if canceled.Load() {
-					break
-				}
-				if log.Message == "" {
-					continue
-				}
+		for _, log := range buildLogs.Logs {
 
-				s.ClearCurrentLine()
-				fmt.Println(ui.Gray(log.Message))
-
-				if strings.HasPrefix(log.Message, "Successfully tagged") {
-					s.Success()
-					stopCh <- true
-				}
+			if log.Message == "" {
+				continue
 			}
+
+			s.ClearCurrentLine()
+			fmt.Println(ui.Gray(log.Message))
+
+			if strings.HasPrefix(log.Message, "Successfully tagged") {
+				s.Success("Building OK")
+				stopCh <- true
+			}
+		}
+
+		if canceled.Load() {
+			break
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusFailed {
@@ -273,12 +259,12 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 			starting = true
 		}
 
-		if buildLogs.Deployment.Status == api.DeploymentStatusRunning {
-			s.Success()
+		if buildLogs.Deployment.Status == api.DeploymentStatusFinished {
+			s.Success("Starting OK")
 			fmt.Println(ui.Info("App started succesfully :)"))
 			fmt.Println()
-			fmt.Println(fmt.Sprintf("\topen the following url in your browser:"))
-			fmt.Println(fmt.Sprintf("\t%s", ui.Green(buildLogs.Deployment.URL)))
+			fmt.Printf("\topen the following url in your browser:\n")
+			fmt.Printf("\t%s", ui.Green(buildLogs.Deployment.URL))
 			fmt.Println()
 			return nil
 		}
@@ -289,8 +275,16 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 
 		time.Sleep(100 * time.Millisecond)
 	}
+
+	return nil
 }
 
-func (o *DeployOptions) printAppInfo() {
-	fmt.Printf("%s %s\n", ui.Gray("app:"), ui.Green(o.config.App))
+func (opts *DeployOptions) printAppInfo() {
+	fmt.Printf("app: %s\n", ui.Green(opts.config.App))
+}
+
+func helpCreateApp() {
+	fmt.Println("you don't have any apps on fing")
+	fmt.Println("go to fing dashboard and create one:")
+	fmt.Printf("\t%s\n\n", ui.Green("https://dashboard.fing.ir/apps"))
 }

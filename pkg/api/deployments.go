@@ -49,14 +49,14 @@ type BuildLogs struct {
 type DeploymentStatus string
 
 const (
-	DeploymentStatusReady    = "ready"
-	DeploymentStatusPending  = "pending"
-	DeploymentStatusBuilding = "building"
-	DeploymentStatusStarting = "starting"
-	DeploymentStatusRunning  = "running"
-	DeploymentStatusShutdown = "shutdown"
-	DeploymentStatusCancel   = "cancel"
-	DeploymentStatusFailed   = "failed"
+	DeploymentStatusReady    DeploymentStatus = "ready"
+	DeploymentStatusPending                   = "pending"
+	DeploymentStatusBuilding                  = "building"
+	DeploymentStatusStarting                  = "starting"
+	DeploymentStatusFinished                  = "finished"
+	DeploymentStatusShutdown                  = "shutdown"
+	DeploymentStatusCancel                    = "cancel"
+	DeploymentStatusFailed                    = "failed"
 )
 
 func (c *Client) DeployemntCreate(app string, opts *CreateDeploymentOptions) (*Deployment, []*FileInfo, error) {

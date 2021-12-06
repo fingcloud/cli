@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"io"
+
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/config/session"
 	"github.com/spf13/pflag"
@@ -13,6 +15,9 @@ var (
 )
 
 type Context struct {
+	Stdout io.Writer
+	Stderr io.Writer
+
 	Client *api.Client
 
 	APIServer   *string
@@ -21,8 +26,10 @@ type Context struct {
 	Path *string
 }
 
-func NewContext() *Context {
+func NewContext(out io.Writer, err io.Writer) *Context {
 	return &Context{
+		Stdout:      out,
+		Stderr:      err,
 		APIServer:   stringptr(""),
 		AccessToken: stringptr(""),
 		Path:        stringptr(""),

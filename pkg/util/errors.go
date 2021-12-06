@@ -17,6 +17,7 @@ type ErrHandler func(string, int)
 
 var (
 	ErrExit         = fmt.Errorf("exit")
+	ErrNeedToLogin  = fmt.Errorf("need to login:\n\tUse:\tfing auth login")
 	FatalErrHandler = fatal
 )
 

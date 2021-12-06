@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path"
+	"time"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/thoas/go-funk"
@@ -15,14 +16,16 @@ type Config []Session
 
 // Session stores user credentials
 type Session struct {
-	Token   string `json:"token"`
-	Email   string `json:"email"`
-	Default bool   `json:"default"`
-	Alias   string `json:"alias"`
+	Token      string     `json:"token"`
+	Email      string     `json:"email"`
+	Default    bool       `json:"default"`
+	Alias      string     `json:"alias"`
+	LoginAt    *time.Time `json:"login_at,omitempty"`
+	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
 }
 
-// readConfig loads sessions from auth.json
-func readConfig() (Config, error) {
+// ReadConfig loads sessions from auth.json
+func ReadConfig() (Config, error) {
 	home, err := homedir.Dir()
 	if err != nil {
 		return nil, err
@@ -35,20 +38,21 @@ func readConfig() (Config, error) {
 
 	bs, err := os.ReadFile(sessPath)
 	if err != nil {
-		return cfg, err
+		WriteConfig(cfg)
+		return cfg, nil
 	}
 
 	err = json.Unmarshal(bs, &cfg)
 	if err != nil {
-		writeConfig(cfg)
+		WriteConfig(cfg)
 		return nil, err
 	}
 
 	return cfg, nil
 }
 
-// writeConfig writes session data to auth.json
-func writeConfig(cfg Config) error {
+// WriteConfig writes session data to auth.json
+func WriteConfig(cfg Config) error {
 	home, err := homedir.Dir()
 	if err != nil {
 		return err
@@ -70,7 +74,7 @@ func writeConfig(cfg Config) error {
 
 // AddSession appends an additional session to auth.json
 func AddSession(sess Session) error {
-	cfg, err := readConfig()
+	cfg, err := ReadConfig()
 	if err != nil {
 		return err
 	}
@@ -79,6 +83,9 @@ func AddSession(sess Session) error {
 		s.Default = false
 	}
 	sess.Default = true
+	now := time.Now()
+	sess.LoginAt = &now
+	sess.LastUsedAt = &now
 
 	var exists bool
 	for i, s := range cfg {
@@ -93,11 +100,11 @@ func AddSession(sess Session) error {
 		cfg = append(cfg, sess)
 	}
 
-	return writeConfig(cfg)
+	return WriteConfig(cfg)
 }
 
 func CurrentSession() (Session, error) {
-	cfg, err := readConfig()
+	cfg, err := ReadConfig()
 	if err != nil {
 		return Session{}, err
 	}
@@ -111,7 +118,7 @@ func CurrentSession() (Session, error) {
 }
 
 func UseSession(email string) error {
-	cfg, err := readConfig()
+	cfg, err := ReadConfig()
 	if err != nil {
 		return err
 	}
@@ -119,15 +126,17 @@ func UseSession(email string) error {
 	for _, sess := range cfg {
 		if sess.Email == email || sess.Alias == email {
 			sess.Default = true
+			now := time.Now()
+			sess.LastUsedAt = &now
 			break
 		}
 	}
 
-	return writeConfig(cfg)
+	return WriteConfig(cfg)
 }
 
 func RemoveSession() (Session, error) {
-	cfg, err := readConfig()
+	cfg, err := ReadConfig()
 	if err != nil {
 		return Session{}, err
 	}
@@ -135,13 +144,13 @@ func RemoveSession() (Session, error) {
 	for i, sess := range cfg {
 		if sess.Default {
 			cfg = append(cfg[:i], cfg[i+1:]...)
-			return sess, writeConfig(cfg)
+			return sess, WriteConfig(cfg)
 		}
 	}
 
 	return Session{}, errors.New("No default session found")
 }
 
-func Sessions() ([]Session, error) {
-	return readConfig()
+func AllSessions() ([]Session, error) {
+	return ReadConfig()
 }

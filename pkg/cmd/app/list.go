@@ -5,23 +5,23 @@ import (
 
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
-	"github.com/fingcloud/cli/pkg/command/util"
+	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
-type listOptions struct {
+type ListOptions struct {
 	kind   string
 	format string
 }
 
-func newListCmd(ctx *cli.Context) *cobra.Command {
-	opts := new(listOptions)
+func NewCmdList(ctx *cli.Context) *cobra.Command {
+	opts := new(ListOptions)
 
 	cmd := &cobra.Command{
-		Use:     "ls",
+		Use:     "list",
 		Short:   "list apps",
-		Aliases: []string{"list"},
+		Aliases: []string{"ls"},
 		Args:    cli.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
@@ -32,13 +32,12 @@ func newListCmd(ctx *cli.Context) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.kind, "type", "", "one of [web, service]")
 	cmd.Flags().StringVar(&opts.format, "format", "", "format of result in go template")
 
 	return cmd
 }
 
-func runList(ctx *cli.Context, flags *pflag.FlagSet, opts *listOptions) error {
+func runList(ctx *cli.Context, flags *pflag.FlagSet, opts *ListOptions) error {
 	apps, err := ctx.Client.AppsList(&api.ListAppsOptions{})
 	if err != nil {
 		return err

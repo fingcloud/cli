@@ -5,8 +5,8 @@ import (
 
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
-	"github.com/fingcloud/cli/pkg/command/util"
 	"github.com/fingcloud/cli/pkg/ui"
+	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/thoas/go-funk"
@@ -14,20 +14,19 @@ import (
 	"golang.org/x/text/message"
 )
 
-type createOptions struct {
+type CreateOptions struct {
 	Name     string
 	Platform string
 	Region   string
 	Plan     string
 }
 
-func newCreateCmd(ctx *cli.Context) *cobra.Command {
-	opts := new(createOptions)
+func NewCmdCreate(ctx *cli.Context) *cobra.Command {
+	opts := new(CreateOptions)
 
 	cmd := &cobra.Command{
-		Use:   "create APP",
+		Use:   "create [app]",
 		Short: "create an app",
-		Long:  "show application logs",
 		Args:  cli.Exact(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
@@ -44,7 +43,7 @@ func newCreateCmd(ctx *cli.Context) *cobra.Command {
 	return cmd
 }
 
-func runCreate(ctx *cli.Context, flags *pflag.FlagSet, opts *createOptions) error {
+func runCreate(ctx *cli.Context, flags *pflag.FlagSet, opts *CreateOptions) error {
 	var plans []*api.Plan
 	if opts.Plan == "" {
 		var err error
@@ -84,6 +83,6 @@ func runCreate(ctx *cli.Context, flags *pflag.FlagSet, opts *createOptions) erro
 		return err
 	}
 
-	fmt.Println(ui.Gray(fmt.Sprintf("app '%s' created", app.Name)))
+	fmt.Printf("app '%s' created\n", app.Name)
 	return nil
 }

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultFormat = "{{.Name}}\t{{.Platform}}\t{{.Status}}"
+	defaultFormat = "{{.Name}}\t{{.Image}}\t{{.Platform}}\t{{.Status}}"
 )
 
 var tableHeaders = map[string]string{
@@ -19,6 +19,7 @@ var tableHeaders = map[string]string{
 	"Name":     "NAME",
 	"Label":    "LABEL",
 	"Platform": "PLATFORM",
+	"Image":    "IMAGE",
 	"Status":   "STATUS",
 }
 

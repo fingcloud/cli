@@ -9,6 +9,22 @@ import (
 	"time"
 )
 
+type AppStatus string
+
+const (
+	AppStatusPending   AppStatus = "pending"
+	AppStatusRunning             = "running"
+	AppStatusPreparing           = "preparing"
+	AppStatusAssigned            = "assigned"
+	AppStatusRejected            = "rejected"
+	AppStatusAccepted            = "accepted"
+	AppStatusReady               = "ready"
+	AppStatusStarting            = "starting"
+	AppStatusComplete            = "complete"
+	AppStatusShutdown            = "shutdown"
+	AppStatusRemoved             = "removed"
+)
+
 type ListAppsOptions struct {
 }
 
@@ -19,6 +35,13 @@ type CreateAppOptions struct {
 	Region   string `json:"region"`
 }
 
+type GetAppOptions struct {
+	Name string `json:"name"`
+}
+type StartAppOptions struct {
+	Name string `json:"name"`
+}
+
 type RestartAppOptions struct {
 	Name string `json:"name"`
 }
@@ -27,7 +50,7 @@ type ShutdownAppOptions struct {
 	Name string `json:"name"`
 }
 
-type StartAppOptions struct {
+type RemoveAppOptions struct {
 	Name string `json:"name"`
 }
 
@@ -41,7 +64,8 @@ type App struct {
 	Name          string       `json:"name"`
 	Label         string       `json:"label"`
 	Platform      string       `json:"platform"`
-	Status        string       `json:"status"`
+	Image         string       `json:"image"`
+	Status        AppStatus    `json:"status"`
 	Port          int          `json:"port"`
 	Region        string       `json:"region"`
 	DomainEnabled bool         `json:"domain_enabled"`
@@ -89,6 +113,23 @@ func (c *Client) AppsList(opts *ListAppsOptions) ([]*App, error) {
 	return v, err
 }
 
+func (c *Client) AppsGet(opts *GetAppOptions) (*App, error) {
+	url := fmt.Sprintf("apps/%s", opts.Name)
+
+	req, err := c.NewRequest(http.MethodGet, url, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	v := new(App)
+	_, err = c.Do(req, v)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, err
+}
+
 func (c *Client) AppsCreate(opts *CreateAppOptions) (*App, error) {
 	url := fmt.Sprintf("apps")
 
@@ -104,6 +145,22 @@ func (c *Client) AppsCreate(opts *CreateAppOptions) (*App, error) {
 	}
 
 	return v, err
+}
+
+func (c *Client) AppsStart(opts *StartAppOptions) error {
+	url := fmt.Sprintf("apps/%s/start", opts.Name)
+
+	req, err := c.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
 
 func (c *Client) AppsRestart(opts *RestartAppOptions) error {
@@ -138,10 +195,10 @@ func (c *Client) AppsShutdown(opts *ShutdownAppOptions) error {
 	return err
 }
 
-func (c *Client) AppsStart(opts *StartAppOptions) error {
-	url := fmt.Sprintf("apps/%s/start", opts.Name)
+func (c *Client) AppsRemove(opts *RemoveAppOptions) error {
+	url := fmt.Sprintf("apps/%s", opts.Name)
 
-	req, err := c.NewRequest(http.MethodPost, url, nil)
+	req, err := c.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		return err
 	}
