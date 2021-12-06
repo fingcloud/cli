@@ -65,14 +65,14 @@ func (s sessionPrint) Status() string {
 }
 
 func (s sessionPrint) LoginAt() string {
-	if s.LoginAt == nil {
+	if s.sess.LoginAt == nil {
 		return "NOT SET"
 	}
 	return util.FuzzyAgo(time.Now().Sub(*s.sess.LoginAt))
 }
 
 func (s sessionPrint) LastUsedAt() string {
-	if s.LoginAt == nil {
+	if s.sess.LastUsedAt == nil {
 		return "NOT SET"
 	}
 	return util.FuzzyAgo(time.Now().Sub(*s.sess.LastUsedAt))
