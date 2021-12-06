@@ -25,13 +25,13 @@ func FuzzyAgo(d time.Duration) string {
 		return fmtDuration(int(d.Minutes()), "minute")
 	}
 	if d < 24*time.Hour {
-		return fmtDuration(int(d.Minutes()), "hour")
+		return fmtDuration(int(d.Hours()), "hour")
 	}
 	if d < 24*30*time.Hour {
-		return fmtDuration(int(d.Minutes()), "day")
+		return fmtDuration(int(d.Hours()/24), "day")
 	}
 	if d < 24*30*12*time.Hour {
-		return fmtDuration(int(d.Minutes()), "month")
+		return fmtDuration(int(d.Hours()/24/30), "month")
 	}
 	return fmtDuration(int(d.Hours()/24/365), "year")
 }
