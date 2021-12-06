@@ -74,7 +74,7 @@ func runLogin(ctx *cli.Context, opts *LoginOptions) error {
 
 	fmt.Println(ui.Green("Successfully logged in."))
 
-	sess := session.Session{
+	sess := &session.Session{
 		Token: auth.Token,
 		Email: auth.User.Email,
 	}

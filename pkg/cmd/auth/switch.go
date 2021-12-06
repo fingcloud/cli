@@ -37,10 +37,10 @@ func NewCmdSwitch(ctx *cli.Context) *cobra.Command {
 
 func runSwitch(ctx *cli.Context, opts *SwitchOptions) error {
 	if opts.Email == "" {
-		sessions, err := session.AllSessions()
+		sessions, err := session.Read()
 		util.CheckErr(err)
 
-		options := funk.Map(sessions, func(s session.Session) string { return s.Email }).([]string)
+		options := funk.Map(sessions, func(s *session.Session) string { return s.Email }).([]string)
 		err = ui.PromptSelect("select account", options, &opts.Email)
 		util.CheckErr(err)
 	}

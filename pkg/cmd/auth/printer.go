@@ -23,7 +23,7 @@ var tableHeaders = map[string]string{
 	"LastUsedAt": "LAST USED AT",
 }
 
-func PrintFormat(output io.Writer, format string, sessions []session.Session) error {
+func PrintFormat(output io.Writer, format string, sessions []*session.Session) error {
 	buf := new(bytes.Buffer)
 
 	tmpl, err := template.New("").Funcs(sprig.TxtFuncMap()).Parse(format)
@@ -50,7 +50,7 @@ func PrintFormat(output io.Writer, format string, sessions []session.Session) er
 }
 
 type sessionPrint struct {
-	sess session.Session
+	sess *session.Session
 }
 
 func (s sessionPrint) Email() string {

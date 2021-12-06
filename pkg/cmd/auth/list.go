@@ -31,7 +31,7 @@ func NewCmdList(ctx *cli.Context) *cobra.Command {
 }
 
 func runList(ctx *cli.Context, opts *ListOptions) error {
-	sessions, err := session.AllSessions()
+	sessions, err := session.Read()
 	util.CheckErr(err)
 
 	if opts.format == "" {

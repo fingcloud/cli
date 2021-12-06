@@ -11,9 +11,6 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-// Config stores all logged in sessions
-type Config []Session
-
 // Session stores user credentials
 type Session struct {
 	Token      string     `json:"token"`
@@ -24,41 +21,41 @@ type Session struct {
 	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
 }
 
-// ReadConfig loads sessions from auth.json
-func ReadConfig() (Config, error) {
+// Read loads sessions from auth.json
+func Read() ([]*Session, error) {
 	home, err := homedir.Dir()
 	if err != nil {
 		return nil, err
 	}
 
-	cfg := Config{}
+	sessions := make([]*Session, 0)
 
 	configPath := path.Join(home, ".fing")
 	sessPath := path.Join(configPath, "auth.json")
 
 	bs, err := os.ReadFile(sessPath)
 	if err != nil {
-		WriteConfig(cfg)
-		return cfg, nil
+		Write(sessions)
+		return sessions, nil
 	}
 
-	err = json.Unmarshal(bs, &cfg)
+	err = json.Unmarshal(bs, &sessions)
 	if err != nil {
-		WriteConfig(cfg)
+		Write(sessions)
 		return nil, err
 	}
 
-	return cfg, nil
+	return sessions, nil
 }
 
-// WriteConfig writes session data to auth.json
-func WriteConfig(cfg Config) error {
+// Write writes session data to auth.json
+func Write(sessions []*Session) error {
 	home, err := homedir.Dir()
 	if err != nil {
 		return err
 	}
 
-	bs, err := json.Marshal(cfg)
+	bs, err := json.Marshal(sessions)
 	if err != nil {
 		return err
 	}
@@ -73,13 +70,13 @@ func WriteConfig(cfg Config) error {
 }
 
 // AddSession appends an additional session to auth.json
-func AddSession(sess Session) error {
-	cfg, err := ReadConfig()
+func AddSession(sess *Session) error {
+	sessions, err := Read()
 	if err != nil {
 		return err
 	}
 
-	for _, s := range cfg {
+	for _, s := range sessions {
 		s.Default = false
 	}
 	sess.Default = true
@@ -88,42 +85,46 @@ func AddSession(sess Session) error {
 	sess.LastUsedAt = &now
 
 	var exists bool
-	for i, s := range cfg {
+	for i, s := range sessions {
 		if s.Email == sess.Email {
-			cfg[i] = sess
+			sessions[i] = sess
 			exists = true
 			break
 		}
 	}
 
 	if !exists {
-		cfg = append(cfg, sess)
+		sessions = append(sessions, sess)
 	}
 
-	return WriteConfig(cfg)
+	return Write(sessions)
 }
 
-func CurrentSession() (Session, error) {
-	cfg, err := ReadConfig()
+func CurrentSession() (*Session, error) {
+	sessions, err := Read()
 	if err != nil {
-		return Session{}, err
+		return nil, err
 	}
 
-	found := funk.Find(cfg, func(sess Session) bool { return sess.Default })
-	if sess, ok := found.(Session); ok {
+	found := funk.Find(sessions, func(sess *Session) bool { return sess.Default })
+	if sess, ok := found.(*Session); ok {
 		return sess, nil
 	}
 
-	return Session{}, errors.New("no default session")
+	return nil, errors.New("no default session")
 }
 
 func UseSession(email string) error {
-	cfg, err := ReadConfig()
+	sessions, err := Read()
 	if err != nil {
 		return err
 	}
 
-	for _, sess := range cfg {
+	for _, sess := range sessions {
+		sess.Default = false
+	}
+
+	for _, sess := range sessions {
 		if sess.Email == email || sess.Alias == email {
 			sess.Default = true
 			now := time.Now()
@@ -132,25 +133,21 @@ func UseSession(email string) error {
 		}
 	}
 
-	return WriteConfig(cfg)
+	return Write(sessions)
 }
 
-func RemoveSession() (Session, error) {
-	cfg, err := ReadConfig()
+func RemoveSession() (*Session, error) {
+	sessions, err := Read()
 	if err != nil {
-		return Session{}, err
+		return nil, err
 	}
 
-	for i, sess := range cfg {
+	for i, sess := range sessions {
 		if sess.Default {
-			cfg = append(cfg[:i], cfg[i+1:]...)
-			return sess, WriteConfig(cfg)
+			sessions = append(sessions[:i], sessions[i+1:]...)
+			return sess, Write(sessions)
 		}
 	}
 
-	return Session{}, errors.New("No default session found")
-}
-
-func AllSessions() ([]Session, error) {
-	return ReadConfig()
+	return nil, errors.New("No default session found")
 }
