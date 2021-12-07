@@ -20,9 +20,9 @@ func NewCmdSwitch(ctx *cli.Context) *cobra.Command {
 	opts := new(SwitchOptions)
 
 	cmd := &cobra.Command{
-		Use:     "switch [flags]",
-		Short:   "switch to another account",
-		Aliases: []string{"use"},
+		Use:     "use [flags]",
+		Short:   "use another account",
+		Aliases: []string{"switch", "change"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx.SetupClient()
 
