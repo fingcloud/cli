@@ -39,6 +39,7 @@ func NewCmdRoot(in io.Reader, out, err io.Writer) *cobra.Command {
 	cmd.AddCommand(auth.NewCmdLogin(ctx))
 	cmd.AddCommand(NewCmdDeploy(ctx))
 	cmd.AddCommand(NewCmdVersion(ctx))
+	cmd.AddCommand(NewCmdCompletion(ctx))
 
 	return cmd
 }

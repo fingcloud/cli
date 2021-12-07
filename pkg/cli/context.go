@@ -52,12 +52,10 @@ func stringptr(val string) *string {
 func (c *Context) SetupClient() error {
 	var accessToken string
 
-	sess, err := session.CurrentSession()
-	if err != nil {
-		return err
+	sess, _ := session.CurrentSession()
+	if sess != nil {
+		accessToken = sess.Token
 	}
-
-	accessToken = sess.Token
 
 	if *c.AccessToken != "" {
 		accessToken = *c.AccessToken
