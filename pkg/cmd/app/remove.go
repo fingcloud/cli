@@ -24,7 +24,6 @@ func NewCmdRemove(ctx *cli.Context) *cobra.Command {
 		Aliases: []string{"rm"},
 		Args:    cli.Exact(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx.SetupClient()
 			opts.Name = args[0]
 
 			util.CheckErr(runRemove(ctx, opts))

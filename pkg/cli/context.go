@@ -49,10 +49,13 @@ func stringptr(val string) *string {
 	return &val
 }
 
-func (c *Context) SetupClient() {
+func (c *Context) SetupClient() error {
 	var accessToken string
 
-	sess, _ := session.CurrentSession()
+	sess, err := session.CurrentSession()
+	if err != nil {
+		return err
+	}
 
 	accessToken = sess.Token
 
@@ -66,4 +69,5 @@ func (c *Context) SetupClient() {
 	}
 
 	c.Client = api.NewClient(accessToken, opts...)
+	return nil
 }

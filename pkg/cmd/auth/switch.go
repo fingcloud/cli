@@ -24,7 +24,6 @@ func NewCmdUse(ctx *cli.Context) *cobra.Command {
 		Short:   "use another account",
 		Aliases: []string{"switch", "change"},
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx.SetupClient()
 
 			util.CheckErr(RunUse(ctx, opts))
 		},

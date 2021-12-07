@@ -23,7 +23,6 @@ func NewCmdList(ctx *cli.Context) *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cli.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx.SetupClient()
 
 			util.CheckErr(RunList(ctx, opts))
 		},

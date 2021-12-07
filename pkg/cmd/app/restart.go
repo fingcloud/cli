@@ -21,7 +21,6 @@ func NewCmdRestart(ctx *cli.Context) *cobra.Command {
 		Short: "restart app",
 		Args:  cli.Exact(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx.SetupClient()
 			opts.Name = args[0]
 
 			util.CheckErr(RunRestart(ctx, opts))

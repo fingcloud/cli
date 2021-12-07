@@ -13,6 +13,7 @@ import (
 	"github.com/fingcloud/cli/pkg/cmd/auth"
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/fingcloud/cli/pkg/update"
+	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +28,9 @@ func NewCmdRoot(in io.Reader, out, err io.Writer) *cobra.Command {
 
 	ctx := cli.NewContext(os.Stdout, os.Stderr)
 	ctx.AddFlags(flags)
+	cmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		util.CheckErr(ctx.SetupClient())
+	}
 
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 

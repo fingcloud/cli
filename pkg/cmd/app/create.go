@@ -28,7 +28,6 @@ func NewCmdCreate(ctx *cli.Context) *cobra.Command {
 		Short: "create an app",
 		Args:  cli.Exact(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx.SetupClient()
 			opts.Name = args[0]
 
 			util.CheckErr(RunCreate(ctx, opts))

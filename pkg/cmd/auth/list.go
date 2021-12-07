@@ -19,7 +19,6 @@ func NewCmdList(ctx *cli.Context) *cobra.Command {
 		Short:   "list your accounts",
 		Aliases: []string{"ls"},
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx.SetupClient()
 
 			util.CheckErr(runList(ctx, opts))
 		},

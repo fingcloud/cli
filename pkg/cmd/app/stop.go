@@ -22,7 +22,6 @@ func NewCmdStop(ctx *cli.Context) *cobra.Command {
 		Aliases: []string{"shutdown"},
 		Args:    cli.Exact(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx.SetupClient()
 			opts.Name = args[0]
 
 			util.CheckErr(RunStop(ctx, opts))

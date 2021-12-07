@@ -19,7 +19,6 @@ func NewCmdLogout(ctx *cli.Context) *cobra.Command {
 		Short:   "logout your account",
 		Aliases: []string{"rm"},
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx.SetupClient()
 
 			util.CheckErr(runLogout(ctx, opts))
 		},
