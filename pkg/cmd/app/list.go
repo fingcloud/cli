@@ -21,7 +21,7 @@ func NewCmdList(ctx *cli.Context) *cobra.Command {
 		Use:     "list",
 		Short:   "list apps",
 		Aliases: []string{"ls"},
-		Args:    cli.NoArgs,
+		Args:    cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			util.CheckErr(RunList(ctx, opts))

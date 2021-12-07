@@ -9,7 +9,7 @@ func NewCmd(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth [command]",
 		Short: "login, logout, switch your authentications",
-		Args:  cli.NoArgs,
+		Args:  cobra.NoArgs,
 	}
 
 	cmd.AddCommand(

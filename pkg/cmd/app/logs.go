@@ -24,7 +24,7 @@ func NewCmdLogs(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "logs [app]",
 		Short: "show app logs",
-		Args:  cli.Exact(1),
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 
 			opts.App = args[0]

@@ -19,7 +19,7 @@ func NewCmdStart(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start [app]",
 		Short: "start app",
-		Args:  cli.Exact(1),
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Name = args[0]
 

@@ -20,7 +20,7 @@ func NewCmdStop(ctx *cli.Context) *cobra.Command {
 		Use:     "stop [app]",
 		Short:   "stop app",
 		Aliases: []string{"shutdown"},
-		Args:    cli.Exact(1),
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Name = args[0]
 

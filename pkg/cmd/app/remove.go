@@ -22,7 +22,7 @@ func NewCmdRemove(ctx *cli.Context) *cobra.Command {
 		Use:     "remove [app]",
 		Short:   "remove an app",
 		Aliases: []string{"rm"},
-		Args:    cli.Exact(1),
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Name = args[0]
 

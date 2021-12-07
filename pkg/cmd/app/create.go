@@ -26,7 +26,7 @@ func NewCmdCreate(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create [app]",
 		Short: "create an app",
-		Args:  cli.Exact(1),
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Name = args[0]
 
