@@ -8,7 +8,6 @@ import (
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"github.com/thoas/go-funk"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -32,9 +31,7 @@ func NewCmdCreate(ctx *cli.Context) *cobra.Command {
 			ctx.SetupClient()
 			opts.Name = args[0]
 
-			if err := runCreate(ctx, cmd.Flags(), opts); err != nil {
-				util.CheckErr(err)
-			}
+			util.CheckErr(RunCreate(ctx, opts))
 		},
 	}
 
@@ -43,14 +40,12 @@ func NewCmdCreate(ctx *cli.Context) *cobra.Command {
 	return cmd
 }
 
-func runCreate(ctx *cli.Context, flags *pflag.FlagSet, opts *CreateOptions) error {
+func RunCreate(ctx *cli.Context, opts *CreateOptions) error {
 	var plans []*api.Plan
 	if opts.Plan == "" {
 		var err error
 		plans, err = ctx.Client.PlansList()
-		if err != nil {
-			return err
-		}
+		util.CheckErr(err)
 
 		printer := message.NewPrinter(language.English)
 
@@ -63,6 +58,7 @@ func runCreate(ctx *cli.Context, flags *pflag.FlagSet, opts *CreateOptions) erro
 
 		var selected string
 		err = ui.PromptSelect("select plan", options, &selected)
+		util.CheckErr(err)
 
 		fmt.Sscanf(selected, "[ %s ]", &opts.Plan)
 	}
@@ -78,10 +74,7 @@ func runCreate(ctx *cli.Context, flags *pflag.FlagSet, opts *CreateOptions) erro
 		PlanID:   plan.ID,
 		Region:   "iran",
 	})
-
-	if err != nil {
-		return err
-	}
+	util.CheckErr(err)
 
 	fmt.Printf("app '%s' created\n", app.Name)
 	return nil

@@ -12,21 +12,21 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-type SwitchOptions struct {
+type UseOptions struct {
 	Email string
 }
 
-func NewCmdSwitch(ctx *cli.Context) *cobra.Command {
-	opts := new(SwitchOptions)
+func NewCmdUse(ctx *cli.Context) *cobra.Command {
+	opts := new(UseOptions)
 
 	cmd := &cobra.Command{
 		Use:     "use [flags]",
 		Short:   "use another account",
 		Aliases: []string{"switch", "change"},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
 
-			return runSwitch(ctx, opts)
+			util.CheckErr(RunUse(ctx, opts))
 		},
 	}
 
@@ -35,7 +35,7 @@ func NewCmdSwitch(ctx *cli.Context) *cobra.Command {
 	return cmd
 }
 
-func runSwitch(ctx *cli.Context, opts *SwitchOptions) error {
+func RunUse(ctx *cli.Context, opts *UseOptions) error {
 	if opts.Email == "" {
 		sessions, err := session.Read()
 		util.CheckErr(err)

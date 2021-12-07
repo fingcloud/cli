@@ -18,10 +18,10 @@ func NewCmdList(ctx *cli.Context) *cobra.Command {
 		Use:     "list",
 		Short:   "list your accounts",
 		Aliases: []string{"ls"},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
 
-			return runList(ctx, opts)
+			util.CheckErr(runList(ctx, opts))
 		},
 	}
 

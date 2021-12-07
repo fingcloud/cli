@@ -7,7 +7,6 @@ import (
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 type ListOptions struct {
@@ -26,9 +25,7 @@ func NewCmdList(ctx *cli.Context) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
 
-			if err := runList(ctx, cmd.Flags(), opts); err != nil {
-				util.CheckErr(err)
-			}
+			util.CheckErr(RunList(ctx, opts))
 		},
 	}
 
@@ -37,11 +34,9 @@ func NewCmdList(ctx *cli.Context) *cobra.Command {
 	return cmd
 }
 
-func runList(ctx *cli.Context, flags *pflag.FlagSet, opts *ListOptions) error {
+func RunList(ctx *cli.Context, opts *ListOptions) error {
 	apps, err := ctx.Client.AppsList(&api.ListAppsOptions{})
-	if err != nil {
-		return err
-	}
+	util.CheckErr(err)
 
 	if opts.format == "" {
 		opts.format = defaultFormat

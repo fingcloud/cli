@@ -47,7 +47,7 @@ func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
 
-			RunDeploy(ctx, opts)
+			util.CheckErr(RunDeploy(ctx, opts))
 		},
 	}
 
@@ -84,9 +84,7 @@ func (opts *DeployOptions) validate() error {
 // RunDeploy starts deploy process
 func RunDeploy(ctx *cli.Context, opts *DeployOptions) error {
 	sess, err := session.CurrentSession()
-	if err != nil {
-		return err
-	}
+	util.CheckErr(err)
 	fmt.Printf("Using session: %s\n", sess.Email)
 
 	if opts.config.App == "" {
@@ -116,9 +114,7 @@ func RunDeploy(ctx *cli.Context, opts *DeployOptions) error {
 	s.Start("Getting files...")
 
 	files, err := fileutils.GetFiles(opts.Path)
-	if err != nil {
-		return err
-	}
+	util.CheckErr(err)
 
 	s.Success("Getting files OK")
 	s.Start("Creating Deployment...")
@@ -144,9 +140,8 @@ func RunDeploy(ctx *cli.Context, opts *DeployOptions) error {
 		deployment = d
 		return nil
 	}
-	if err := retry.Do(deployFn, retry.Attempts(3)); err != nil {
-		return err
-	}
+	err = retry.Do(deployFn, retry.Attempts(3))
+	util.CheckErr(err)
 
 	s.Success("Creating Deployment OK")
 	if deployment.Platform != "" {
@@ -154,9 +149,7 @@ func RunDeploy(ctx *cli.Context, opts *DeployOptions) error {
 	}
 
 	err = readBuildLogs(ctx, opts.config.App, deployment.ID)
-	if err != nil {
-		return err
-	}
+	util.CheckErr(err)
 
 	if !opts.Dispatch {
 		return app.RunLogs(ctx, opts.logs)
@@ -261,11 +254,7 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusFinished {
 			s.Success("Starting OK")
-			fmt.Println(ui.Info("App started succesfully :)"))
-			fmt.Println()
-			fmt.Printf("\topen the following url in your browser:\n")
-			fmt.Printf("\t%s", ui.Green(buildLogs.Deployment.URL))
-			fmt.Println()
+			helpSuccessulDeploy(buildLogs.Deployment.URL)
 			return nil
 		}
 
@@ -287,4 +276,12 @@ func helpCreateApp() {
 	fmt.Println("you don't have any apps on fing")
 	fmt.Println("go to fing dashboard and create one:")
 	fmt.Printf("\t%s\n\n", ui.Green("https://dashboard.fing.ir/apps"))
+}
+
+func helpSuccessulDeploy(url string) {
+	fmt.Println(ui.Info("App started succesfully :)"))
+	fmt.Println()
+	fmt.Printf("\topen the following url in your browser:\n")
+	fmt.Printf("\t%s", ui.Green(url))
+	fmt.Println()
 }

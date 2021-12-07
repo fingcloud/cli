@@ -25,10 +25,10 @@ func NewCmdLogin(ctx *cli.Context) *cobra.Command {
 		Use:     "login",
 		Short:   "login your account",
 		Aliases: []string{"add"},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
 
-			return runLogin(ctx, opts)
+			util.CheckErr(runLogin(ctx, opts))
 		},
 	}
 

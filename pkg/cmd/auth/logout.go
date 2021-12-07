@@ -21,7 +21,7 @@ func NewCmdLogout(ctx *cli.Context) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx.SetupClient()
 
-			runLogout(ctx, opts)
+			util.CheckErr(runLogout(ctx, opts))
 		},
 	}
 

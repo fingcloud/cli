@@ -7,7 +7,6 @@ import (
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 type StartOptions struct {
@@ -25,16 +24,14 @@ func NewCmdStart(ctx *cli.Context) *cobra.Command {
 			ctx.SetupClient()
 			opts.Name = args[0]
 
-			if err := RunStart(ctx, cmd.Flags(), opts); err != nil {
-				util.CheckErr(err)
-			}
+			util.CheckErr(RunStart(ctx, opts))
 		},
 	}
 
 	return cmd
 }
 
-func RunStart(ctx *cli.Context, flags *pflag.FlagSet, opts *StartOptions) error {
+func RunStart(ctx *cli.Context, opts *StartOptions) error {
 	err := ctx.Client.AppsStart(&api.StartAppOptions{
 		Name: opts.Name,
 	})

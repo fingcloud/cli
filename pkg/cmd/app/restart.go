@@ -7,7 +7,6 @@ import (
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 type RestartOptions struct {
@@ -25,22 +24,18 @@ func NewCmdRestart(ctx *cli.Context) *cobra.Command {
 			ctx.SetupClient()
 			opts.Name = args[0]
 
-			if err := RunRestart(ctx, cmd.Flags(), opts); err != nil {
-				util.CheckErr(err)
-			}
+			util.CheckErr(RunRestart(ctx, opts))
 		},
 	}
 
 	return cmd
 }
 
-func RunRestart(ctx *cli.Context, flags *pflag.FlagSet, opts *RestartOptions) error {
+func RunRestart(ctx *cli.Context, opts *RestartOptions) error {
 	err := ctx.Client.AppsRestart(&api.RestartAppOptions{
 		Name: opts.Name,
 	})
-	if err != nil {
-		return err
-	}
+	util.CheckErr(err)
 
 	fmt.Printf("app '%s' restarted\n", opts.Name)
 

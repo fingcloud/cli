@@ -7,7 +7,6 @@ import (
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 type StopOptions struct {
@@ -26,16 +25,14 @@ func NewCmdStop(ctx *cli.Context) *cobra.Command {
 			ctx.SetupClient()
 			opts.Name = args[0]
 
-			if err := RunStop(ctx, cmd.Flags(), opts); err != nil {
-				util.CheckErr(err)
-			}
+			util.CheckErr(RunStop(ctx, opts))
 		},
 	}
 
 	return cmd
 }
 
-func RunStop(ctx *cli.Context, flags *pflag.FlagSet, opts *StopOptions) error {
+func RunStop(ctx *cli.Context, opts *StopOptions) error {
 	err := ctx.Client.AppsShutdown(&api.ShutdownAppOptions{
 		Name: opts.Name,
 	})

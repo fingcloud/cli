@@ -15,7 +15,7 @@ func NewCmd(ctx *cli.Context) *cobra.Command {
 	cmd.AddCommand(
 		NewCmdLogin(ctx),
 		NewCmdLogout(ctx),
-		NewCmdSwitch(ctx),
+		NewCmdUse(ctx),
 		NewCmdList(ctx),
 	)
 

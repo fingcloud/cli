@@ -7,6 +7,7 @@ import (
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
 	"github.com/fingcloud/cli/pkg/ui"
+	"github.com/fingcloud/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +30,7 @@ func NewCmdLogs(ctx *cli.Context) *cobra.Command {
 
 			opts.App = args[0]
 
-			RunLogs(ctx, opts)
+			util.CheckErr(RunLogs(ctx, opts))
 		},
 	}
 
@@ -48,9 +49,7 @@ func RunLogs(ctx *cli.Context, opts *LogsOptions) error {
 		logs, err := ctx.Client.AppLogs(opts.App, &api.AppLogsOptions{
 			Since: from,
 		})
-		if err != nil {
-			return err
-		}
+		util.CheckErr(err)
 
 		for _, log := range logs {
 			var timestamp string
