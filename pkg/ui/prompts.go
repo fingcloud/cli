@@ -4,16 +4,25 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 )
 
-func PromptInput(msg string, v interface{}) error {
+type PromptOptions struct {
+	Suggest func(toComplete string) []string
+}
+
+func PromptInput(msg string, v interface{}, opts ...*PromptOptions) error {
 	p := &survey.Input{
 		Message: msg,
+	}
+	if len(opts) > 0 {
+		if opts[0].Suggest != nil {
+			p.Suggest = opts[0].Suggest
+		}
 	}
 
 	return survey.AskOne(p, v)
 }
 
 func PromptEmail(v interface{}) error {
-	return PromptInput("Enter your email", v)
+	return PromptInput("Enter your email:", v)
 }
 
 func PromptPassword(v interface{}) error {
