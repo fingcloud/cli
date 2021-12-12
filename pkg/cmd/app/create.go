@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
@@ -33,19 +34,17 @@ func NewCmdCreate(ctx *cli.Context) *cobra.Command {
 			util.CheckErr(RunCreate(ctx, opts))
 		},
 	}
-
+	cmd.Flags().StringVar(&opts.Platform, "platform", "", "your app platform")
 	cmd.Flags().StringVar(&opts.Plan, "plan", "", "your app plan. check 'fing plans'")
 
 	return cmd
 }
 
 func RunCreate(ctx *cli.Context, opts *CreateOptions) error {
-	var plans []*api.Plan
-	if opts.Plan == "" {
-		var err error
-		plans, err = ctx.Client.PlansList()
-		util.CheckErr(err)
+	plans, err := ctx.Client.PlansList()
+	util.CheckErr(err)
 
+	if opts.Plan == "" {
 		printer := message.NewPrinter(language.English)
 
 		options := funk.Map(plans, func(p *api.Plan) string {
@@ -67,9 +66,29 @@ func RunCreate(ctx *cli.Context, opts *CreateOptions) error {
 		return fmt.Errorf("invalid plan %s\nRun 'fing plans' to see available plans", opts.Plan)
 	}
 
+	if opts.Platform == "" {
+		platforms, err := ctx.Client.PlatformList()
+		util.CheckErr(err)
+
+		options := &ui.PromptOptions{
+			Suggest: func(toComplete string) []string {
+				suggestions := make([]string, 0)
+
+				for _, p := range platforms {
+					if strings.HasPrefix(p.ID, toComplete) {
+						suggestions = append(suggestions, p.ID)
+					}
+				}
+				return suggestions
+			},
+		}
+		err = ui.PromptInput("Enter your platform:", &opts.Platform, options)
+		util.CheckErr(err)
+	}
+
 	app, err := ctx.Client.AppsCreate(&api.CreateAppOptions{
 		Label:    opts.Name,
-		Platform: "auto",
+		Platform: opts.Platform,
 		PlanID:   plan.ID,
 		Region:   "iran",
 	})
