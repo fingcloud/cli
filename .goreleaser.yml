@@ -25,10 +25,6 @@ builds:
 
 archives:
   - name_template: "fing-{{ .Os }}-{{ .Arch }}"
-    format_overrides:
-      - goos: windows
-        format: zip
-    files: [a-workaround-to-include-only-the-binary*]
     wrap_in_directory: false
 
 checksum:
