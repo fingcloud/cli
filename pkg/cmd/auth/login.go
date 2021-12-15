@@ -19,6 +19,7 @@ type LoginOptions struct {
 	Username      string
 	Password      string
 	PasswordStdin bool
+	Browser       bool
 }
 
 func NewCmdLogin(ctx *cli.Context) *cobra.Command {
@@ -29,14 +30,18 @@ func NewCmdLogin(ctx *cli.Context) *cobra.Command {
 		Short:   "login your account",
 		Aliases: []string{"add"},
 		Run: func(cmd *cobra.Command, args []string) {
-
-			util.CheckErr(runLogin(ctx, opts))
+			loginHandler := cliLogin
+			if opts.Browser {
+				loginHandler = browserLogin
+			}
+			util.CheckErr(runLogin(ctx, opts, loginHandler))
 		},
 	}
 
 	cmd.Flags().StringVarP(&opts.Username, "username", "u", opts.Username, "your account username/email")
 	cmd.Flags().StringVarP(&opts.Password, "password", "p", opts.Password, "your account password")
 	cmd.Flags().BoolVar(&opts.PasswordStdin, "password-stdin", false, "take the password from stdin")
+	cmd.Flags().BoolVar(&opts.Browser, "browser", false, "login easily using your browser")
 
 	return cmd
 }
@@ -56,7 +61,7 @@ func (opts *LoginOptions) validate() error {
 func getCredentials(opts *LoginOptions) error {
 	// warn user if uses --password in none development environment
 	if opts.Password != "" {
-		fmt.Println("WARNING! Using --password via the CLI is insecure. Use --password-stdin instead.")
+		fmt.Println(ui.Yellow("WARNING! Using --password via the CLI is insecure. Use --password-stdin instead."))
 		if opts.PasswordStdin {
 			return errors.New("--password and --password-stdin can't be used together")
 		}
@@ -71,8 +76,7 @@ func getCredentials(opts *LoginOptions) error {
 		input, err := ioutil.ReadAll(os.Stdin)
 		util.CheckErr(err)
 
-		opts.Password = strings.TrimSuffix(string(input), "\n")
-		opts.Password = strings.TrimSuffix(opts.Password, "\r")
+		opts.Password = strings.TrimRight(string(input), "\n\r")
 		return nil
 	}
 
@@ -87,15 +91,28 @@ func getCredentials(opts *LoginOptions) error {
 	return nil
 }
 
-func runLogin(ctx *cli.Context, opts *LoginOptions) error {
-	util.CheckErr(getCredentials(opts))
-	util.CheckErr(opts.validate())
+func cliLogin(ctx *cli.Context, opts *LoginOptions) (*api.Auth, error) {
+	if err := getCredentials(opts); err != nil {
+		return nil, err
+	}
 
-	auth, err := ctx.Client.AccountLogin(&api.AccountLoginOptions{
+	if err := opts.validate(); err != nil {
+		return nil, err
+	}
+
+	return ctx.Client.AccountLogin(&api.AccountLoginOptions{
 		Email:    opts.Username,
 		Password: opts.Password,
 	})
-	util.CheckErr(err)
+}
+
+type LoginHandler func(*cli.Context, *LoginOptions) (*api.Auth, error)
+
+func runLogin(ctx *cli.Context, opts *LoginOptions, loginHandler LoginHandler) (err error) {
+	auth, err := loginHandler(ctx, opts)
+	if err != nil {
+		return err
+	}
 
 	fmt.Println(ui.Green("Successfully logged in."))
 
@@ -104,7 +121,9 @@ func runLogin(ctx *cli.Context, opts *LoginOptions) error {
 		Email: auth.User.Email,
 	}
 	err = session.AddSession(sess)
-	util.CheckErr(err)
+	if err != nil {
+		return err
+	}
 
 	fmt.Println("Session saved")
 	return nil
