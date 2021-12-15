@@ -3,6 +3,9 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
@@ -13,7 +16,7 @@ import (
 )
 
 type LoginOptions struct {
-	User          string
+	Username      string
 	Password      string
 	PasswordStdin bool
 }
@@ -31,7 +34,7 @@ func NewCmdLogin(ctx *cli.Context) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.User, "user", "u", opts.User, "your account username/email")
+	cmd.Flags().StringVarP(&opts.Username, "username", "u", opts.Username, "your account username/email")
 	cmd.Flags().StringVarP(&opts.Password, "password", "p", opts.Password, "your account password")
 	cmd.Flags().BoolVar(&opts.PasswordStdin, "password-stdin", false, "take the password from stdin")
 
@@ -39,8 +42,8 @@ func NewCmdLogin(ctx *cli.Context) *cobra.Command {
 }
 
 func (opts *LoginOptions) validate() error {
-	if opts.User == "" {
-		return errors.New("user/email not specified")
+	if opts.Username == "" {
+		return errors.New("username not specified")
 	}
 
 	if opts.Password == "" {
@@ -50,23 +53,46 @@ func (opts *LoginOptions) validate() error {
 	return nil
 }
 
-func runLogin(ctx *cli.Context, opts *LoginOptions) error {
-	if opts.User == "" {
-		util.CheckErr(ui.PromptEmail(&opts.User))
+func getCredentials(opts *LoginOptions) error {
+	// warn user if uses --password in none development environment
+	if opts.Password != "" {
+		fmt.Println("WARNING! Using --password via the CLI is insecure. Use --password-stdin instead.")
+		if opts.PasswordStdin {
+			return errors.New("--password and --password-stdin can't be used together")
+		}
+	}
+
+	// read password from stdin --password-stdin
+	if opts.PasswordStdin {
+		if opts.Username == "" {
+			return errors.New("Must provider --username with --password-stdin")
+		}
+
+		input, err := ioutil.ReadAll(os.Stdin)
+		util.CheckErr(err)
+
+		opts.Password = strings.TrimSuffix(string(input), "\n")
+		opts.Password = strings.TrimSuffix(opts.Password, "\r")
+		return nil
+	}
+
+	if opts.Username == "" {
+		util.CheckErr(ui.PromptEmail(&opts.Username))
 	}
 
 	if opts.Password == "" {
 		util.CheckErr(ui.PromptPassword(&opts.Password))
 	}
 
-	if opts.PasswordStdin {
+	return nil
+}
 
-	}
-
+func runLogin(ctx *cli.Context, opts *LoginOptions) error {
+	util.CheckErr(getCredentials(opts))
 	util.CheckErr(opts.validate())
 
 	auth, err := ctx.Client.AccountLogin(&api.AccountLoginOptions{
-		Email:    opts.User,
+		Email:    opts.Username,
 		Password: opts.Password,
 	})
 	util.CheckErr(err)
