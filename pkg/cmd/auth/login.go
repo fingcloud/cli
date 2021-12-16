@@ -3,6 +3,9 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/fingcloud/cli/pkg/api"
 	"github.com/fingcloud/cli/pkg/cli"
@@ -13,9 +16,10 @@ import (
 )
 
 type LoginOptions struct {
-	User          string
+	Username      string
 	Password      string
 	PasswordStdin bool
+	Browser       bool
 }
 
 func NewCmdLogin(ctx *cli.Context) *cobra.Command {
@@ -26,21 +30,25 @@ func NewCmdLogin(ctx *cli.Context) *cobra.Command {
 		Short:   "login your account",
 		Aliases: []string{"add"},
 		Run: func(cmd *cobra.Command, args []string) {
-
-			util.CheckErr(runLogin(ctx, opts))
+			loginHandler := cliLogin
+			if opts.Browser {
+				loginHandler = browserLogin
+			}
+			util.CheckErr(runLogin(ctx, opts, loginHandler))
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.User, "user", "u", opts.User, "your account username/email")
+	cmd.Flags().StringVarP(&opts.Username, "username", "u", opts.Username, "your account username/email")
 	cmd.Flags().StringVarP(&opts.Password, "password", "p", opts.Password, "your account password")
 	cmd.Flags().BoolVar(&opts.PasswordStdin, "password-stdin", false, "take the password from stdin")
+	cmd.Flags().BoolVar(&opts.Browser, "browser", false, "login easily using your browser")
 
 	return cmd
 }
 
 func (opts *LoginOptions) validate() error {
-	if opts.User == "" {
-		return errors.New("user/email not specified")
+	if opts.Username == "" {
+		return errors.New("username not specified")
 	}
 
 	if opts.Password == "" {
@@ -50,26 +58,61 @@ func (opts *LoginOptions) validate() error {
 	return nil
 }
 
-func runLogin(ctx *cli.Context, opts *LoginOptions) error {
-	if opts.User == "" {
-		util.CheckErr(ui.PromptEmail(&opts.User))
+func getCredentials(opts *LoginOptions) error {
+	// warn user if uses --password in none development environment
+	if opts.Password != "" {
+		fmt.Println(ui.Yellow("WARNING! Using --password via the CLI is insecure. Use --password-stdin instead."))
+		if opts.PasswordStdin {
+			return errors.New("--password and --password-stdin can't be used together")
+		}
+	}
+
+	// read password from stdin --password-stdin
+	if opts.PasswordStdin {
+		if opts.Username == "" {
+			return errors.New("Must provider --username with --password-stdin")
+		}
+
+		input, err := ioutil.ReadAll(os.Stdin)
+		util.CheckErr(err)
+
+		opts.Password = strings.TrimRight(string(input), "\n\r")
+		return nil
+	}
+
+	if opts.Username == "" {
+		util.CheckErr(ui.PromptEmail(&opts.Username))
 	}
 
 	if opts.Password == "" {
 		util.CheckErr(ui.PromptPassword(&opts.Password))
 	}
 
-	if opts.PasswordStdin {
+	return nil
+}
 
+func cliLogin(ctx *cli.Context, opts *LoginOptions) (*api.Auth, error) {
+	if err := getCredentials(opts); err != nil {
+		return nil, err
 	}
 
-	util.CheckErr(opts.validate())
+	if err := opts.validate(); err != nil {
+		return nil, err
+	}
 
-	auth, err := ctx.Client.AccountLogin(&api.AccountLoginOptions{
-		Email:    opts.User,
+	return ctx.Client.AccountLogin(&api.AccountLoginOptions{
+		Email:    opts.Username,
 		Password: opts.Password,
 	})
-	util.CheckErr(err)
+}
+
+type LoginHandler func(*cli.Context, *LoginOptions) (*api.Auth, error)
+
+func runLogin(ctx *cli.Context, opts *LoginOptions, loginHandler LoginHandler) (err error) {
+	auth, err := loginHandler(ctx, opts)
+	if err != nil {
+		return err
+	}
 
 	fmt.Println(ui.Green("Successfully logged in."))
 
@@ -78,7 +121,9 @@ func runLogin(ctx *cli.Context, opts *LoginOptions) error {
 		Email: auth.User.Email,
 	}
 	err = session.AddSession(sess)
-	util.CheckErr(err)
+	if err != nil {
+		return err
+	}
 
 	fmt.Println("Session saved")
 	return nil
