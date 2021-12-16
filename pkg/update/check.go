@@ -83,7 +83,7 @@ func CheckForUpdate(ctx context.Context, version string) (*Release, error) {
 }
 
 func ShouldCheckUpdate() bool {
-	if cli.Version == "dev2" {
+	if cli.Version == "dev" {
 		return false
 	}
 	if os.Getenv("CI") != "" {
