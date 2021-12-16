@@ -63,7 +63,7 @@ func Execute() {
 	release := <-updateChan
 	if release != nil {
 		b := box.New(box.Config{Px: 2, Py: 1, Type: "Single", Color: "Yellow"})
-		b.Println(fmt.Sprintf("Update Availabe %s -> %s", cli.Version, release.Version), update.UpdateCommand())
+		b.Println(fmt.Sprintf("Update Available %s -> %s", cli.Version, release.Version), update.UpdateCommand())
 	}
 
 	rootCmd := NewCmdRoot(os.Stdin, os.Stdout, os.Stderr)

@@ -278,7 +278,7 @@ func helpCreateApp() {
 }
 
 func helpSuccessulDeploy(url string) {
-	fmt.Println(ui.Info("App started succesfully :)"))
+	fmt.Println(ui.Info("App started successfully :)"))
 	if url != "" {
 		fmt.Println()
 		fmt.Printf("\topen the following url in your browser:\n")
