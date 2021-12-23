@@ -64,7 +64,10 @@ func NewCmdDeploy(ctx *cli.Context) *cobra.Command {
 	return cmd
 }
 
-var s = spinner.New().WithOptions(spinner.WithExitOnAbort(false), spinner.WithNotifySignals(false))
+var (
+	s                = spinner.New().WithOptions(spinner.WithExitOnAbort(false), spinner.WithNotifySignals(false))
+	ErrBuildCanceled = errors.New("Build canceled")
+)
 
 func newOptions() *DeployOptions {
 	opts := new(DeployOptions)
@@ -228,12 +231,14 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 
 			if strings.HasPrefix(log.Message, "Successfully tagged") {
 				s.Success("Building OK")
-				stopCh <- true
+				if !canceled.Load() {
+					stopCh <- true
+				}
 			}
 		}
 
 		if canceled.Load() {
-			break
+			return ErrBuildCanceled
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusFailed {
@@ -243,7 +248,7 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusCancel {
 			s.Error("Build canceled")
-			return errors.New("Build canceled")
+			return ErrBuildCanceled
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusStarting && !starting {
@@ -263,8 +268,6 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 
 		time.Sleep(100 * time.Millisecond)
 	}
-
-	return nil
 }
 
 func (opts *DeployOptions) printAppInfo() {
