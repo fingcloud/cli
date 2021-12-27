@@ -149,7 +149,7 @@ func RemoveSession() (*Session, error) {
 			sessions = append(sessions[:i], sessions[i+1:]...)
 			if i < len(sessions) {
 				sessions[i].Default = true
-			} else {
+			} else if len(sessions) > 0 {
 				sessions[0].Default = true
 			}
 			return sess, Write(sessions)
