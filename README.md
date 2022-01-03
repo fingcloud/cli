@@ -62,7 +62,7 @@ iwr https://fing.ir/install.ps1 -useb | iex
 ## Quick Start
 Fing builds your app and deploys it to fing cloud servers.
 
-First you need to login. (if you don't have an account yes, [create an account](https://dashboard.fing.ir/register?utm_source=github&utm_medium=link&utm_campaign=github_cli&utm_id=ref&utm_content=register_link)).
+First you need to login. (if you don't have an account yes, [create an account](https://cloud.fing.ir/register?utm_source=github&utm_medium=link&utm_campaign=github_cli&utm_id=ref&utm_content=register_link)).
 ```bash
 fing login
 ````

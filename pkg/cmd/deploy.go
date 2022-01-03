@@ -277,7 +277,7 @@ func (opts *DeployOptions) printAppInfo() {
 func helpCreateApp() {
 	fmt.Println("you don't have any apps on fing")
 	fmt.Println("go to fing dashboard and create one:")
-	fmt.Printf("\t%s\n\n", ui.Green("https://dashboard.fing.ir/apps"))
+	fmt.Printf("\t%s\n\n", ui.Green("https://cloud.fing.ir/apps"))
 }
 
 func helpSuccessulDeploy(url string) {
