@@ -162,7 +162,6 @@ func RunDeploy(ctx *cli.Context, opts *DeployOptions) error {
 
 func uploadChanges(ctx *cli.Context, projectPath, app string, files []*api.FileInfo) error {
 	s.UpdateMessage("Getting changed files...")
-	fmt.Println(ui.Details(fmt.Sprintf("%d Files changed", len(files))))
 	tarBuf := new(bytes.Buffer)
 	err := fileutils.Compress(projectPath, files, tarBuf)
 	if err != nil {
@@ -170,9 +169,8 @@ func uploadChanges(ctx *cli.Context, projectPath, app string, files []*api.FileI
 		return err
 	}
 
-	s.UpdateMessage("Uploading changed files...")
+	s.Successf("%d Files changed [%s]", len(files), humanize.Bytes(uint64(tarBuf.Len())))
 
-	fmt.Println(ui.Details(ui.KeyValue("Upload size", humanize.Bytes(uint64(tarBuf.Len())))))
 	bar := ui.NewProgress(tarBuf.Len(), "Uploading")
 
 	reporter := &api.ProgressReader{
