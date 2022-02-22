@@ -232,6 +232,7 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 				if !canceled.Load() {
 					stopCh <- true
 				}
+				s.Start("Pushing...")
 			}
 		}
 
@@ -250,6 +251,7 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 		}
 
 		if buildLogs.Deployment.Status == api.DeploymentStatusStarting && !starting {
+			s.Success("Pushing OK")
 			s.Start("Starting...")
 			starting = true
 		}
