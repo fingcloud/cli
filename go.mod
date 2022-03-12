@@ -12,6 +12,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/gosuri/uilive v0.0.4
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0

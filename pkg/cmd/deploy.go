@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -20,6 +21,7 @@ import (
 	"github.com/fingcloud/cli/pkg/fileutils"
 	"github.com/fingcloud/cli/pkg/ui"
 	"github.com/fingcloud/cli/pkg/util"
+	"github.com/gosuri/uilive"
 	"github.com/r6m/spinner"
 	"github.com/spf13/cobra"
 	"github.com/thoas/go-funk"
@@ -191,8 +193,13 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 
 	canceled := atomic.NewBool(false)
 
+	bars := make([]*pullInfo, 0)
+	writer := uilive.New()
+	writer.Start()
+
 	go func() {
 		defer func() {
+			writer.Stop()
 			signal.Stop(interruptCh)
 			close(interruptCh)
 			close(stopCh)
@@ -221,6 +228,41 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 		for _, log := range buildLogs.Logs {
 
 			if log.Message == "" {
+				continue
+			}
+
+			// image pull
+			if strings.HasPrefix(log.Message, "{'status': ") {
+				log.Message = strings.ReplaceAll(log.Message, "'", "\"")
+
+				pb := new(pullInfo)
+				if err := json.Unmarshal([]byte(log.Message), pb); err != nil {
+					continue
+				}
+
+				if pb.ID == "" {
+					continue
+				}
+
+				var found bool
+				for _, b := range bars {
+					if b.ID == pb.ID {
+						found = true
+						b.Status = pb.Status
+						b.Progress = pb.Progress
+						break
+					}
+				}
+
+				if !found {
+					bars = append(bars, pb)
+				}
+
+				for _, b := range bars {
+					fmt.Fprintln(writer, b)
+				}
+				writer.Flush()
+
 				continue
 			}
 
@@ -288,4 +330,17 @@ func helpSuccessulDeploy(url string) {
 		fmt.Printf("\t%s", ui.Green(url))
 		fmt.Println()
 	}
+}
+
+type pullInfo struct {
+	ID       string `json:"id"`
+	Status   string `json:"status"`
+	Progress string `json:"progress"`
+}
+
+func (p *pullInfo) String() string {
+	if p.Status == "Downloading" {
+		return fmt.Sprintf("%s %s", p.ID, p.Progress)
+	}
+	return fmt.Sprintf("%s %s", p.ID, p.Status)
 }
