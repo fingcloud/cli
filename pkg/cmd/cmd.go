@@ -67,5 +67,5 @@ func Execute() {
 	}
 
 	rootCmd := NewCmdRoot(os.Stdin, os.Stdout, os.Stderr)
-	cobra.CheckErr(rootCmd.Execute())
+	rootCmd.Execute()
 }
