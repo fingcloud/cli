@@ -266,7 +266,7 @@ func readBuildLogs(ctx *cli.Context, app string, deploymentID int64) error {
 			from = buildLogs.Logs[len(buildLogs.Logs)-1].ID
 		}
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 	}
 }
 
