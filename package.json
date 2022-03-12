@@ -21,6 +21,6 @@
   },
   "files": [],
   "dependencies": {
-    "go-npm": "^0.1.9"
+    "@patheticgeek/go-npm": "^0.1.15"
   }
 }
