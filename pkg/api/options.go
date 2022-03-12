@@ -18,3 +18,9 @@ func WithHttpClient(client *http.Client) Option {
 		c.client = client
 	}
 }
+
+func WithUserAgent(userAgent string) Option {
+	return func(c *Client) {
+		c.headers["User-Agent"] = userAgent
+	}
+}

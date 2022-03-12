@@ -97,7 +97,6 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 		req.Header.Add(k, v)
 	}
 
-	req.Header.Set("User-Agent", "fingcli")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
 
