@@ -1,6 +1,6 @@
 {
   "name": "@fingcloud/cli",
-  "version": "v0.2.7",
+  "version": "v0.2.8",
   "description": "Develop and deploy code with zero configuration",
   "main": "index.js",
   "author": "Fing",
@@ -21,6 +21,6 @@
   },
   "files": [],
   "dependencies": {
-    "@patheticgeek/go-npm": "^0.1.15"
+    "go-npm": "^0.1.9"
   }
 }
