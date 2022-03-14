@@ -79,9 +79,10 @@ func (c *Context) SetupClient() error {
 	}
 
 	opts := make([]api.Option, 0)
+	opts = append(opts, api.WithUserAgent(fmt.Sprintf("fingcli/%s", Version)))
+
 	if c.APIServer != "" {
 		opts = append(opts, api.WithBaseURL(c.APIServer))
-		opts = append(opts, api.WithUserAgent(fmt.Sprintf("fingcli/%s", Version)))
 	}
 
 	c.Client = api.NewClient(accessToken, opts...)
