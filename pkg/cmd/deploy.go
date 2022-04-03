@@ -87,9 +87,10 @@ func (opts *DeployOptions) validate() error {
 
 // RunDeploy starts deploy process
 func RunDeploy(ctx *cli.Context, opts *DeployOptions) error {
-	sess, err := session.CurrentSession()
-	util.CheckErr(err)
-	fmt.Printf("Using session: %s\n", sess.Email)
+	sess, _ := session.CurrentSession()
+	if sess != nil {
+		fmt.Printf("Using session: %s\n", sess.Email)
+	}
 
 	if opts.config.App == "" {
 		apps, err := ctx.Client.AppsList(&api.ListAppsOptions{})
@@ -111,7 +112,7 @@ func RunDeploy(ctx *cli.Context, opts *DeployOptions) error {
 		Follow: true,
 	}
 
-	err = opts.validate()
+	err := opts.validate()
 	util.CheckErr(err)
 
 	opts.printAppInfo()
