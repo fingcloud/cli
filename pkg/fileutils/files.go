@@ -27,6 +27,10 @@ func GetFiles(projectPath string) ([]*api.FileInfo, error) {
 			return err
 		}
 
+		if ig.MatchesPath(path) {
+			return nil
+		}
+
 		// has ignorefile ? add to patterns
 		if info.IsDir() {
 			if _, ok := cachedDirs[path]; !ok {
@@ -35,10 +39,6 @@ func GetFiles(projectPath string) ([]*api.FileInfo, error) {
 				ig = ignore.CompileIgnoreLines(patterns...)
 				cachedDirs[path] = true
 			}
-		}
-
-		if ig.MatchesPath(path) {
-			return nil
 		}
 
 		filePath, _ := filepath.Rel(projectPath, path)
