@@ -45,11 +45,8 @@ func NewCmdRoot(in io.Reader, out, err io.Writer) *cobra.Command {
 }
 
 func Execute() {
-	updateChan := make(chan *update.Release)
-
 	go func() {
 		if !update.ShouldCheckUpdate() {
-			updateChan <- nil
 			return
 		}
 
@@ -57,14 +54,12 @@ func Execute() {
 		if err != nil {
 			fmt.Println(ui.Warning("could not check for update"), err.Error())
 		}
-		updateChan <- release
-	}()
 
-	release := <-updateChan
-	if release != nil {
-		b := box.New(box.Config{Px: 2, Py: 1, Type: "Single", Color: "Yellow"})
-		b.Println(fmt.Sprintf("Update Available %s -> %s", cli.Version, release.Version), update.UpdateCommand())
-	}
+		if release != nil {
+			b := box.New(box.Config{Px: 2, Py: 1, Type: "Single", Color: "Yellow"})
+			b.Println(fmt.Sprintf("Update Available %s -> %s", cli.Version, release.Version), update.UpdateCommand())
+		}
+	}()
 
 	rootCmd := NewCmdRoot(os.Stdin, os.Stdout, os.Stderr)
 	rootCmd.Execute()
