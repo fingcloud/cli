@@ -1,6 +1,6 @@
 {
   "name": "@fingcloud/cli",
-  "version": "v0.2.11",
+  "version": "0.2.11",
   "description": "Develop and deploy code with zero configuration",
   "main": "bin/index.js",
   "author": "Fing",
@@ -21,8 +21,7 @@
     "install": "binwrap-install",
     "prepare": "binwrap-prepare",
     "test": "test:binwrap",
-    "test:binwrap": "binwrap-test",
-    "prepublishOnly": "npm run test:binwrap"
+    "test:binwrap": "binwrap-test"
   },
   "dependencies": {
     "binwrap": "^0.2.3"

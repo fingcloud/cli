@@ -6,7 +6,7 @@ const path = require('path')
 
 const pkg = require(path.join(__dirname, '..', 'package.json'))
 const binary = 'fing'
-const root = `https://github.com/fingcloud/cli/releases/download/${pkg.version}/${binary}-`
+const root = `https://github.com/fingcloud/cli/releases/download/v${pkg.version}/${binary}-`
 
 module.exports = binwrap({
   dirname: __dirname,
